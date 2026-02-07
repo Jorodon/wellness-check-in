@@ -1,11 +1,15 @@
-# wellness-check-in
+# Wellness Check-in (App name placeholder)
+## Overview
 Untitled project for CEN3031 - Placeholder Description
 ## Table Of Contents
-
-1. [Getting Started](#getting-started)
-2. [Usage/Examples](#usageexamples)
-3. [Documentation](#documentation)
-4. [Authors](#authors)
+0. [Overview](#overview)
+1. [Tech Stack](#tech-stack)
+2. [Getting Started](#getting-started)
+3. [Usage/Examples](#usageexamples)
+4. [Documentation](#documentation)
+5. [Authors](#authors)
+## Tech Stack
+---
 ## Getting Started
 ---
 ## Usage/Examples
@@ -15,7 +19,6 @@ Untitled project for CEN3031 - Placeholder Description
 - [Documentation](linkplaceholder)
   
 - [Video Overview](linkplaceholder)
-
 
 ## Authors
 
