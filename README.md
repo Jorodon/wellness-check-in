@@ -30,5 +30,6 @@ Untitled project for CEN3031 - Placeholder Description
 
 ## Authors
 
-- [@Jorodon](https://github.com/Jorodon)
 - [@Colbygrimmscott](https://github.com/Colbygrimmscott)
+- [@Jorodon](https://github.com/Jorodon)
+- [@Kroselli](https://github.com/Kroselli)
