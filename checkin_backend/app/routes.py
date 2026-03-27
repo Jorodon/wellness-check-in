@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, request, render_template
 from .extensions import db
 from .forms import RegisterForm
 from .models import User
@@ -9,7 +9,8 @@ main = Blueprint('main', __name__)
 @main.route('/')
 @main.route('/home')
 def home_page():
-    return "<h1>Coming Soon...Gator Check-In!</h1>"
+    return render_template("home_page.html")
+    #return "<h1>Coming Soon...Gator Check-In!</h1>"
 
 
 @main.route('/dev/reset-db')
