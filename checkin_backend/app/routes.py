@@ -1,18 +1,21 @@
-from flask import Blueprint, current_app, request, render_template
+from flask import Flask, Blueprint, current_app, request, render_template
 from .extensions import db
 from .forms import RegisterForm
 from .models import User
 
 main = Blueprint('main', __name__)
 
-
+# Default start page, has buttons for login (login_page) and registering (register_page)
 @main.route('/')
+def start_page():
+    return render_template("index.html")
+
+# Home page, also referred to as the dashboard. Default view once a user has logged into app
 @main.route('/home')
 def home_page():
-    return render_template("home_page.html")
-    #return "<h1>Coming Soon...Gator Check-In!</h1>"
+    return render_template("pages/home_page.html")
 
-
+# Database reset page, for development use
 @main.route('/dev/reset-db')
 def reset_db():
     if not current_app.config.get("DEBUG", False):
@@ -27,9 +30,9 @@ def reset_db():
     db.create_all()
     return "Development database reset complete."
 
-
-@main.route('/signin', methods=['GET', 'POST'])
-def signin_page():
+# Registration page, allows user to register with username, email, and password
+@main.route('/register', methods=['GET', 'POST'])
+def register_page():
     if request.method == "POST":
         data = request.get_json()
 
@@ -40,7 +43,7 @@ def signin_page():
 
         db.session.add(user_to_create)
         db.session.commit()
-
+        return "{{ url_for('main.login_page') }}"
         return {'message': "User created successfully"}
 
     # form = RegisterForm()
@@ -50,13 +53,20 @@ def signin_page():
     #                           password=form.password1.data)
     #     db.session.add(user_to_create)
     #     db.session.commit()
-    #
+    
     # if form.errors != {}:
     #     for err_msg in form.errors.values():
     #         print(f'There was an error with creating user: {err_msg}')
-    #
+    
     # if form.errors != {}:
     #     for err_msg in form.errors.values():
     #         print(f'There was an error with creating user: {err_msg}')
 
-    return "<p1>Sign in</p>"
+    #return "<p1>Login</p>"
+    return render_template("pages/register_page.html")
+
+# Login page, allows user to login with email/username and password
+@main.route('/login')
+def login_page():
+    return render_template("pages/login_page.html")
+    #return "<h1>Coming Soon...Gator Check-In!</h1>"
