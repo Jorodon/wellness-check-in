@@ -70,3 +70,9 @@ def register_page():
 def login_page():
     return render_template("pages/login_page.html")
     #return "<h1>Coming Soon...Gator Check-In!</h1>"
+
+ # Weekly task page, allows users to record events and reminders for upcoming tasks
+@main.route('/weekly-tasks')
+def weekly_tasks():
+    return render_template("pages/weekly_tasks.html")
+    #return "<h1>Coming Soon...Gator Check-In!</h1>"

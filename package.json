@@ -1,14 +1,13 @@
 {
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
     "autoprefixer": "^10.4.27",
+    "daisyui": "^5.5.19",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2"
   },
-  "dependencies": {
-    "@tailwindcss/postcss": "^4.2.2"
-  },
   "scripts": {
-  "build": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css",
-  "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css --watch"
-}
+    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css",
+    "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css --watch"
+  }
 }
