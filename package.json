@@ -9,5 +9,9 @@
   "scripts": {
     "build": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css",
     "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css --watch"
+  },
+  "dependencies": {
+    "flyonui": "^2.4.1",
+    "fullcalendar": "^6.1.20"
   }
 }
