@@ -6,9 +6,10 @@
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
-
       document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         var eventDay = new Date();
@@ -27,8 +28,20 @@
         });
         calendar.render()
       });
-
     </script>
+
+    <script>
+        window.addEventListener('load', function () {
+            // Basic
+            flatpickr('#flatpickr-date', {
+                monthSelectorType: 'static',
+                static: true, 
+                appendTo: document.querySelector('#my_modal_3 .modal-box')
+            })
+        })
+    </script>
+
+
 
 </head>
 <body>
@@ -72,7 +85,7 @@
 
     <main>
         <section>
-            <div class="card flex flex-row not-prose p-4 min-h-screen gap-4">
+            <div class="card flex flex-row not-prose p-4 max-h-4/5 gap-4">
                 <div id='calendar' class="flex-1"></div>
                 <div class="w-1/5 bg-base-100 border p-4">
                     <h2 class="font-semibold mb-4">Upcoming Events</h2>
@@ -81,14 +94,45 @@
         </section>
 
         <section>
-            <button class="btn" onclick="my_modal_3.showModal()">open modal</button>
+            <button class="btn" onclick="my_modal_3.showModal()">Create a Task</button>
             <dialog id="my_modal_3" class="modal">
-                <div class="modal-box">
+                <div class="modal-box max-w-3xl">
                     <form method="dialog">
+                        <h3 class="test-lg font-bold">Create a task</h3>
                         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        <div>
+                            <!--ADD ROUTE TO TASK CREATION LOGIC HERE-->
+                            <form class="max-w-3xl mx-auto" action="{{ url_for('main.register_page') }}" method="POST">
+                                <div class="flex flex-row gap-4 my-4">
+                                    <div class="flex-1">
+                                        <label for "task_name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                        <input type="text" id="task_name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label for "reminder_date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                        <select id="reminder_date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                            <option disabled selected>Select date to be reminded</option>
+                                            <option>Always</option>
+                                            <option>1 week before</option>
+                                            <option>3 days before</option>
+                                            <option>1 day before</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label for "task_date" class="block mb-3 text-sm font-medium text-heading">Date</label>
+                                    <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                                </div>
+                                <div class="mt-4">
+                                    <label for "task_description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                                    <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
+                                </div>
+                                <div class="flex items-center justify-center mt-4">
+                                    <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+                                </div>
+                            </form>
+                        </div>
                     </form>
-                    <h3 class="test-lg font-bold">Create a task</h3>
-                    <p class="py-4">Additional Dialog</p>
                 </div>
             </dialog>
         </section>
