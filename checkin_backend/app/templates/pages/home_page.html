@@ -5,9 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+
+    <script>
+        window.onload = async function fetchCheckinStatus() {
+            try {
+                const checkinResponse = await fetch('/checkin/today', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (checkinResponse.status === 404) {
+                    document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
+                    return;
+                }
+
+                const checkinJsonData = await response.json();
+                document.getElementById('mood-data').innerText = checkin_json_data.mood;
+                document.getElementById('stress-data').innerText = checkin_json_data.stress;
+                document.getElementById('energy-data').innerText = checkin_json_data.energy;
+                document.getElementById('checkin-status-message').classList.add('hidden');
+                document.getElementById('checkin-results').classList.remove('hidden');
+            } catch (error){
+                document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
+            }
+        }
+        window.addEventListener('DOMContentLoaded', loadTodayStatus);
+    </script>
+
 </head>
 <body>
-    <h1>Coming Soon...Gator Check-In!</h1>
+    <main class="max-w-6xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Gator Check-In!</h1>
+
+        <section class="grid grid-cols-2 gap-8 justify-items-center">
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
+                <p id="checkin-status-message">Updating daily check-in status...</p>
+                <div id="checkin-results" class="hidden mt-4 space-y-4">
+                    <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
+                    <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
+                    <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
+                </div>
+            </div>
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Journal</h2>
+            </div>
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Statistics</h2>
+            </div>
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Calendar</h2>
+            </div>
+        </section>
+    </main>
+    
 </body>
 </html>
 
