@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="../static/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Welcome to Gator Check-In</h1>
+    <div>
+        <a href="{{ url_for('main.login_page') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+        Login
+        </a>
+        <!---<button>Login</button>
+        <a href="./pages/login.html">To Login Page</a>
+    -->
+    </div>
+    <div>
+        <a href="{{ url_for('main.register_page') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+        Register
+        </a>
+    </div>
+</body>
+</html>
