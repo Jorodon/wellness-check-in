@@ -1,7 +1,9 @@
 from flask import Flask
 from .config import Config
 from .extensions import db, migrate, jwt
-from .routes import main
+from .routes.routes import main
+from .routes.auth import auth_bp
+from .routes.checkins import checkins_bp
 
 
 def create_app():
@@ -13,6 +15,8 @@ def create_app():
     jwt.init_app(app)
 
     app.register_blueprint(main)
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(checkins_bp, url_prefix="/checkins")
 
     return app
 
