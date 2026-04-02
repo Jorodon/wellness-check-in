@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request
+from flask import Flask, Blueprint, current_app, request, render_template
 from .extensions import db
 from .forms import RegisterForm
 from .models import User

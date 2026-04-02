@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.2"
+  },
+  "scripts": {
+  "build": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css",
+  "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css --watch"
+}
+}
