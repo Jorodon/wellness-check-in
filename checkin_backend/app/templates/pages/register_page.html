@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link href="../../static/css/output.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -17,7 +17,7 @@
                     password: document.getElementById('password').value
                 }
 
-                const registrationJsonSend = await fetch("{{ url_for('auth.register') }}", {
+                const registrationResponse = await fetch("{{ url_for('auth.register') }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -25,12 +25,12 @@
                     body: JSON.stringify(registrationFormData)
                 });
 
-                const registrationResponse = await registrationJsonSend.json();
-
+                const registrationReturn = await registrationResponse.json();
+                
                 if (registrationResponse.ok) {
                     window.location.href = "/login";
                 } else {
-                    alert(registrationResponse.message || "An unknown error has occurred");
+                    alert(registrationReturn.error || "An unknown error has occurred");
                 }
             });
         });
@@ -53,8 +53,6 @@
             <div class="mt-4">
                 <label for "password" class="block mb-3 text-sm font-medium text-heading">Password</label>
                 <input type="password" id="password" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="JohnS@email.com" required>
-            </div>
-
             </div>
             <div class="flex items-center justify-center mt-4">
                 <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
