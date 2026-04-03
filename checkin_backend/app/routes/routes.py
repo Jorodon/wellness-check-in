@@ -29,6 +29,7 @@ def register_page():
 def login_page():
     return render_template("pages/login_page.html")
 
+
  # Daily Check-In page, allows user to record several metrics once per day
 @main.route('/checkin')
 def checkin_page():
