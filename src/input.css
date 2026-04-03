@@ -7,3 +7,4 @@
 .flatpickr-calendar {
     z-index: 9999 !important;
 }
+@import "tailwindcss";
