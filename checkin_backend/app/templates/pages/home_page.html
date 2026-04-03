@@ -9,10 +9,12 @@
     <script>
         window.onload = async function fetchCheckinStatus() {
             try {
+                const token = localStorage.getItem('jwtToken');
                 const checkinResponse = await fetch('/checkin/today', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ${token}'
                     },
                 });
 
