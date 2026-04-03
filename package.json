@@ -13,17 +13,10 @@
   "dependencies": {
     "flatpickr": "^4.6.13",
     "flyonui": "^2.4.1",
-    "fullcalendar": "^6.1.20"
-  }
+    "fullcalendar": "^6.1.20",
     "autoprefixer": "^10.4.27",
     "postcss": "^8.5.8",
-    "tailwindcss": "^4.2.2"
-  },
-  "dependencies": {
+    "tailwindcss": "^4.2.2",
     "@tailwindcss/postcss": "^4.2.2"
-  },
-  "scripts": {
-  "build": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css",
-  "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./checkin_backend/app/static/css/output.css --watch"
-}
+  }
 }
