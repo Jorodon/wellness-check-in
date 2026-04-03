@@ -41,7 +41,58 @@
         })
     </script>
 
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            //let data = ["Temp", "TEmp2", "Temp3"];
+            let data = 
+            {
+                "day": [
+                    {
+                        "name": "Monday",
+                        "tasks": [
+                            "Take dog for walk",
+                            "Take a shower"
+                        ]
+                    },
+                    {
+                        "name": "Tuesday",
+                        "tasks": [
+                            "Fix car",
+                            "Go to doctors"
+                        ]
+                    },
+                    {
+                        "name": "Thursday",
+                        "tasks": [
+                            "Fight a wall"
+                        ]
+                    },
+                ]
+            };
+            
+            let dayList = document.getElementById('day-list');
+            //let taskList = document.getElementById("task-items");
 
+            for (let i = 0; i < data.day.length; ++i) {
+                let dayArr = data.day[i];
+                let dayHeader = document.createElement('h3');
+                dayHeader.innerText = dayArr.name;
+                dayHeader.classList.add('text-lg', 'font-bold');
+                dayList.append(dayHeader);
+
+                let taskItems = document.createElement('ul');
+                taskItems.classList.add('text-md', 'font-normal');
+                //ul.innerText = dayObj.name;
+                for (let j = 0; j < dayArr.tasks.length; ++j) {
+                    let li = document.createElement('li');
+                    li.innerText = dayArr.tasks[j];
+                    taskItems.appendChild(li);
+                }
+                dayList.appendChild(taskItems);
+            }
+
+        });
+    </script>
 
 </head>
 <body>
@@ -82,10 +133,9 @@
             <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
                 <div id='calendar' class="flex-1"></div>
                     <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                        <div class="flex flex-col rounded-base">
+                        <div class="flex flex-col">
                             <h2 class="font-semibold mb-4">Upcoming Events</h2>
-                            <ul id="task-items" class="flex-1 hidden menu px-1">
-                            </ul>
+                            <div id="day-list" class="flex-1 menu px-1"></div>
                         </div>
                     </div>
                 </div>
