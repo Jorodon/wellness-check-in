@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <script>
+    <!-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
             let eventDay = new Date();
@@ -28,7 +28,127 @@
             });
             calendar.render()
         });
+    </script> -->
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        
+        // async function fetchEventHistory() {
+        //     try {
+        //         const token = localStorage.getItem('jwtToken');
+        //         const eventHistoryResponse = await fetch('/calendar/history', {
+        //             method: 'GET',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'Authorization': 'Bearer ${token}'
+        //             },
+        //         });
+
+        //         if (eventHistoryResponse.status === 404) {
+        //             document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
+        //             return;
+        //         }
+
+        //         const events = await response.json();
+        //     } catch (error){
+        //         document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+        //     }
+        // }
+        
+
+        const calendar = document.getElementById('calendar')
+        let selectedEvent = null
+        let selectedDateInfo = null
+        function addDays(date, days) {
+            const result = new Date(date)
+            result.setDate(result.getDate() + days)
+            return result
+        }
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+            })
+        }
+
+        const today = new Date()
+        
+        const events = [
+            {
+            title: 'Past Event',
+            start: addDays(today, -2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'All Day Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'Long Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            end: addDays(today, 5).toISOString().split('T')[0],
+            classNames: ['fc-event-primary']
+            }
+        ]
+
+        const calendarObj = new FullCalendar.Calendar(calendar, {
+            initialView: 'dayGridMonth',
+            editable: true,
+            direction: 'ltr',
+            eventResizableFromStart: true,
+            selectable: true,
+            headerToolbar: {
+            left: 'title prev,next',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            },
+            events: events,
+            eventClick: function (info) {
+            selectedEvent = info.event
+            document.getElementById('modalTitle').textContent = `${formatDate(info.event.start)}`
+            document.getElementById('eventTitle').value = info.event.title
+            document.getElementById('modalTrigger').click()
+            }
+        })
+
+        calendarObj.render()
+        })
     </script>
+
+{#
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const today = new Date()
+
+            const taskData = {
+                title: document.getElementById('task-name').value,
+                start: document.getElementById('reminder-date').toISOString().split('T')[0],
+                end: addDays(today, 5).toISOString().split('T')[0],
+                classNames: ['fc-event-primary'],
+                description: document.getElementById('task-description')
+            }
+
+            const taskResponse = await fetch("{{ url_for('calendar.addTask') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(taskData)
+            });
+
+            const taskReturn = await taskResponse.json();
+            
+            if (taskResponse.ok) {
+                //window.location.href = "/login";
+            } else {
+                alert(taskReturn.error || "An unknown error has occurred");
+            }
+        });
+    </script>
+#}
 
     <script>
         window.addEventListener('load', function () {
@@ -130,6 +250,8 @@
 
     <main>
         <section>
+            <button type="button" class="btn hidden" id="modalTrigger" data-overlay="#calendar-event-modal"></button>
+
             <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
                 <div id='calendar' class="flex-1"></div>
                     <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
@@ -140,7 +262,54 @@
                     </div>
                 </div>
             </div>
+
+            <div id="calendar-event-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                </div>
+            </div>
+            </div>
         </section>
+
+
+
+
+    <div class="card flex not-prose p-4 w-full">
+    <div id="calendar-custom"></div>
+    </div>
+    <!-- Modal Button (Hidden) -->
+
+    <button type="button" class="btn hidden" id="modalTrigger"  aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar-event-modal" data-overlay="#calendar-event-modal"></button>
+
+    <!-- Modal -->
+    <div id="calendar-event-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Task</h3>
+            <button type="button" class="btn btn-text btn-circle btn-sm absolute end-3 top-3" aria-label="Close" data-overlay="#calendar-event-modal"><span class="icon-[tabler--x] size-4"></span></button>
+        </div>
+        <form id="eventForm">
+            <div class="modal-body pt-0">
+            <div class="mb-4">
+                <label class="label-text" for="eventTitle"> Add event title below </label>
+                <input type="text" id="eventTitle" class="input" placeholder="Event title" required />
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-soft btn-secondary" data-overlay="#calendar-event-modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </form>
+        </div>
+    </div>
+    </div>
+
+
+
+
+
+
+
 
         <section>
             <button class="btn" onclick="my_modal_3.showModal()">Create a Task</button>
@@ -154,12 +323,12 @@
                             <form class="max-w-3xl mx-auto" action="{{ url_for('main.register_page') }}" method="POST">
                                 <div class="flex flex-row gap-4 my-4">
                                     <div class="flex-1">
-                                        <label for "task_name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
-                                        <input type="text" id="task_name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                                        <label for "task-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                        <input type="text" id="task-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
                                     </div>
                                     <div class="flex-1">
-                                        <label for "reminder_date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
-                                        <select id="reminder_date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                        <label for "reminder-date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                        <select id="reminder-date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
                                             <option disabled selected>Select date to be reminded</option>
                                             <option>Always</option>
                                             <option>1 week before</option>
@@ -169,11 +338,11 @@
                                     </div>
                                 </div>
                                 <div class="mt-4">
-                                    <label for "task_date" class="block mb-3 text-sm font-medium text-heading">Date</label>
+                                    <label for "task-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
                                     <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
                                 </div>
                                 <div class="mt-4">
-                                    <label for "task_description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                                    <label for "task-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
                                     <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
                                 </div>
                                 <div class="flex items-center justify-center mt-4">
