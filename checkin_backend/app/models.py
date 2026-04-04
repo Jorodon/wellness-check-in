@@ -17,3 +17,20 @@ class CheckIn(db.Model):
     energy = db.Column(db.Integer, nullable=False)
     sleep_hours = db.Column(db.Float, nullable=True)
     journal = db.Column(db.Text, nullable=True)
+
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    title = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
+
+    item_type = db.Column(db.String(20), nullable=False, default="event")
+    class_names = db.Column(db.JSON, nullable=True)
+    group_id = db.Column(db.String(64), nullable=True)
+
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurrence = db.Column(db.String(20), nullable=True)

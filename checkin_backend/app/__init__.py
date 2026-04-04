@@ -4,6 +4,7 @@ from .extensions import db, migrate, jwt
 from .routes.routes import main
 from .routes.auth import auth_bp
 from .routes.checkins import checkins_bp
+from .routes.calendar import calendar_bp
 
 
 def create_app():
@@ -17,6 +18,7 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(checkins_bp, url_prefix="/checkins")
+    app.register_blueprint(calendar_bp, url_prefix="/calendar")
 
     return app
 
