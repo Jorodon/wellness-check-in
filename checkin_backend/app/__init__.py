@@ -14,6 +14,10 @@ def create_app():
     migrate.init_app(app, db)
     jwt.init_app(app)
 
+    with app.app_context():
+        from .models import User, CheckIn
+        db.create_all()
+
     app.register_blueprint(main)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(checkins_bp, url_prefix="/checkins")

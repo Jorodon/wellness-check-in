@@ -39,7 +39,6 @@ def signin_page():
 
         db.session.add(user_to_create)
         db.session.commit()
-
         return {'message': "User created successfully"}
 
     # form = RegisterForm()

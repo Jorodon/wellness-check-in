@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="../../static/css/output.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let calendarEl = document.getElementById('calendar');
+            let eventDay = new Date();
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                buttonText: {
+                    today: 'Today'
+                },
+                events: [
+                    {
+                        title: 'Learn JavaScript',
+                        start: eventDay.toISOString().split('T')[0],
+                        classNames: ['fc-event-primary']
+                    }
+                ]
+            });
+            calendar.render()
+        });
+    </script>
+
+    <script>
+        window.addEventListener('load', function () {
+            // Basic
+            flatpickr('#flatpickr-date', {
+                monthSelectorType: 'static',
+                static: true, 
+                appendTo: document.querySelector('#my_modal_3 .modal-box')
+            })
+        })
+    </script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            //let data = ["Temp", "TEmp2", "Temp3"];
+            let data = 
+            {
+                "day": [
+                    {
+                        "name": "Monday",
+                        "tasks": [
+                            "Take dog for walk",
+                            "Take a shower"
+                        ]
+                    },
+                    {
+                        "name": "Tuesday",
+                        "tasks": [
+                            "Fix car",
+                            "Go to doctors"
+                        ]
+                    },
+                    {
+                        "name": "Thursday",
+                        "tasks": [
+                            "Fight a wall"
+                        ]
+                    },
+                ]
+            };
+            
+            let dayList = document.getElementById('day-list');
+            //let taskList = document.getElementById("task-items");
+
+            for (let i = 0; i < data.day.length; ++i) {
+                let dayArr = data.day[i];
+                let dayHeader = document.createElement('h3');
+                dayHeader.innerText = dayArr.name;
+                dayHeader.classList.add('text-lg', 'font-bold');
+                dayList.append(dayHeader);
+
+                let taskItems = document.createElement('ul');
+                taskItems.classList.add('text-md', 'font-normal');
+                //ul.innerText = dayObj.name;
+                for (let j = 0; j < dayArr.tasks.length; ++j) {
+                    let li = document.createElement('li');
+                    li.innerText = dayArr.tasks[j];
+                    taskItems.appendChild(li);
+                }
+                dayList.appendChild(taskItems);
+            }
+
+        });
+    </script>
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="navbar bg-base-100 shadow-sm">
+                <div class="navbar-start">
+                    <ul class="menu menu-horizontal px-1">
+                        <li><a href="{{ url_for('main.login_page') }}">Login page</a></li>
+                        <li><a href="{{ url_for('main.home_page') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('main.checkin_page') }}">Daily Check-In</a></li>
+                        <li><a href="{{ url_for('main.weekly_tasks') }}">Weekly Tasks</a></li>
+                        <li><a href="{{ url_for('main.journal_page') }}">Journal</a></li>
+                        <li><a href="{{ url_for('main.statistics_page') }}">Statistics</a></li>
+                        <li><a href="{{ url_for('main.resources_page') }}">Resources</a></li>
+                    </ul>
+                </div>
+                <div class="navbar-center">
+                    <a class="btn btn-ghost text-xl">Gator Check-In</a>
+                </div>
+                <div class="navbar-end">
+                    <button class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
+                    </button>
+                    <button class="btn btn-ghost btn-circle">
+                        <div class="indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
+                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
+                <div id='calendar' class="flex-1"></div>
+                    <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                        <div class="flex flex-col">
+                            <h2 class="font-semibold mb-4">Upcoming Events</h2>
+                            <div id="day-list" class="flex-1 menu px-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <button class="btn" onclick="my_modal_3.showModal()">Create a Task</button>
+            <dialog id="my_modal_3" class="modal">
+                <div class="modal-box max-w-3xl">
+                    <form method="dialog">
+                        <h3 class="test-lg font-bold">Create a task</h3>
+                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        <div>
+                            <!--ADD ROUTE TO TASK CREATION LOGIC HERE-->
+                            <form class="max-w-3xl mx-auto" action="{{ url_for('main.register_page') }}" method="POST">
+                                <div class="flex flex-row gap-4 my-4">
+                                    <div class="flex-1">
+                                        <label for "task_name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                        <input type="text" id="task_name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label for "reminder_date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                        <select id="reminder_date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                            <option disabled selected>Select date to be reminded</option>
+                                            <option>Always</option>
+                                            <option>1 week before</option>
+                                            <option>3 days before</option>
+                                            <option>1 day before</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label for "task_date" class="block mb-3 text-sm font-medium text-heading">Date</label>
+                                    <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                                </div>
+                                <div class="mt-4">
+                                    <label for "task_description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                                    <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
+                                </div>
+                                <div class="flex items-center justify-center mt-4">
+                                    <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
+        </section>
+    </main>
+</body>
+</html>
