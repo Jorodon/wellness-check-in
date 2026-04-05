@@ -52,4 +52,4 @@ def login():
     access_token = create_access_token(identity=str(user.id))
 
 
-    return jsonify({"access token": access_token}), 200
+    return jsonify({"access-token": access_token}), 200

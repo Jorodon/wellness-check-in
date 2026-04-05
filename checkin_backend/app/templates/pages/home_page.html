@@ -21,7 +21,6 @@
 
                 if (checkinResponse.status === 404) {
                     document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
-                    alert(loginReturn.error || "An unknown error has occurred");
                     return;
                 }
 
@@ -35,6 +34,7 @@
                 document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
             }
         }
+        document.addEventListener('DOMContentLoaded', fetchCheckinStatus);
     </script>
 
     <script defer>
