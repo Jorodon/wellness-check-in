@@ -94,6 +94,8 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendar = document.getElementById('calendar')
+            const calendarList = document.getElementById('calendar-list')
+
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
                 editable: true,
@@ -108,22 +110,29 @@
                 select: function (info) {
                     selectedEvent = null
                     selectedDateInfo = info
-                    document.getElementById('reminder-name').textContent = `${formatDate(info.start)}`
-                    //document.getElementById('eventForm').reset()
+                    document.getElementById('reminder-header').textContent = 'Create a New Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = ''
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = today.toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = ''
+
+                    document.getElementById('submit-button').textContent = 'Create Reminder'
                     document.getElementById('reminder-creation-modal').showModal()
                 },
                 eventClick: function (info) {
-                selectedEvent = info.event
-                document.getElementById('reminder-name').textContent = `${formatDate(info.event.start)}`
-                document.getElementById('reminder-date').placeholder = info.event.title
-                //document.getElementById('modal-header').value = info.event.title
-                document.getElementById('reminder-info-modal').showModal()
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
+
+                    document.getElementById('submit-button').textContent = 'Save Changes'
                 }
             })
-            calendarObj.render()
 
-
-            const calendarList = document.getElementById('calendar-list')
             const calendarListObj = new FullCalendar.Calendar(calendarList, {
                 initialView: 'listWeek',
                 editable: true,
@@ -136,12 +145,19 @@
                 },
                 events: events,
                 eventClick: function (info) {
-                selectedEvent = info.event
-                document.getElementById('reminder-name').textContent = `${formatDate(info.event.start)}`
-                //document.getElementById('modal-header').value = info.event.title
-                document.getElementById('reminder-info-modal').showModal()
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
+
+                    document.getElementById('submit-button').textContent = 'Save Changes'
                 }
             })
+            
+            calendarObj.render()
             calendarListObj.render()
         });
     </script>
@@ -154,10 +170,9 @@
 
             const taskData = {
                 title: document.getElementById('reminder-name').value,
-                start: document.getElementById('reminder-date').toISOString().split('T')[0],
-                end: addDays(today, 5).toISOString().split('T')[0],
+                start: document.getElementById('flatpickr-date').toISOString().split('T')[0],
                 classNames: ['fc-event-primary'],
-                description: document.getElementById('task-description')
+                description: document.getElementById('reminder-description')
             }
 
             const taskResponse = await fetch("{{ url_for('calendar.addTask') }}", {
@@ -185,62 +200,9 @@
             flatpickr('#flatpickr-date', {
                 monthSelectorType: 'static',
                 static: true, 
-                appendTo: document.querySelector('#my_modal_3 .modal-box')
+                appendTo: document.querySelector('#reminder-creation-modal .modal-box')
             })
         })
-    </script>
-
-    <script>
-        window.addEventListener('DOMContentLoaded', function() {
-            //let data = ["Temp", "TEmp2", "Temp3"];
-            let data = 
-            {
-                "day": [
-                    {
-                        "name": "Monday",
-                        "tasks": [
-                            "Take dog for walk",
-                            "Take a shower"
-                        ]
-                    },
-                    {
-                        "name": "Tuesday",
-                        "tasks": [
-                            "Fix car",
-                            "Go to doctors"
-                        ]
-                    },
-                    {
-                        "name": "Thursday",
-                        "tasks": [
-                            "Fight a wall"
-                        ]
-                    },
-                ]
-            };
-            
-            let dayList = document.getElementById('day-list');
-            //let taskList = document.getElementById("task-items");
-
-            for (let i = 0; i < data.day.length; ++i) {
-                let dayArr = data.day[i];
-                let dayHeader = document.createElement('h3');
-                dayHeader.innerText = dayArr.name;
-                dayHeader.classList.add('text-lg', 'font-bold');
-                dayList.append(dayHeader);
-
-                let taskItems = document.createElement('ul');
-                taskItems.classList.add('text-md', 'font-normal');
-                //ul.innerText = dayObj.name;
-                for (let j = 0; j < dayArr.tasks.length; ++j) {
-                    let li = document.createElement('li');
-                    li.innerText = dayArr.tasks[j];
-                    taskItems.appendChild(li);
-                }
-                dayList.appendChild(taskItems);
-            }
-
-        });
     </script>
 
 </head>
@@ -294,7 +256,7 @@
                 <div class="modal-box max-w-3xl">
                     <!--ADD ROUTE FOR -->
                     <form class="max-w-3xl mx-auto" action="{{ url_for('auth.register') }}" method="POST">
-                        <h3 class="test-lg font-bold">Create a Reminder</h3>
+                        <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
                         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         <div>
                             <div class="flex flex-row gap-4 my-4">
@@ -303,9 +265,9 @@
                                     <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
                                 </div>
                                 <div class="flex-1">
-                                    <label for "reminder-date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
-                                    <select id="reminder-date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
-                                        <option disabled selected>Select date to be reminded</option>
+                                    <label for "reminder-interval" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                    <select id="reminder-interval" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                        <option id="default-interval" disabled selected>Select date to be reminded</option>
                                         <option>Always</option>
                                         <option>1 week before</option>
                                         <option>3 days before</option>
@@ -314,140 +276,21 @@
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <label for "task-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
+                                <label for "flatpickr-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
                                 <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
                             </div>
                             <div class="mt-4">
-                                <label for "task-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
-                                <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
+                                <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                                <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
                             </div>
                             <div class="flex items-center justify-center mt-4">
-                                <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </dialog>
-
-            <dialog id="reminder-info-modal" class="modal" role="dialog" tabindex="-1">
-                <div class="modal-box max-w-3xl">
-                    <form class="max-w-3xl mx-auto" action="{{ url_for('auth.register') }}" method="POST">
-                        <h3 class="test-lg font-bold">Edit Reminder</h3>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                        <div>
-                            <div class="flex flex-row gap-4 my-4">
-                                <div class="flex-1">
-                                    <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
-                                    <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="" required>
-                                </div>
-                                <div class="flex-1">
-                                    <label for "reminder-date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
-                                    <select id="reminder-date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
-                                        <option disabled selected>Select date to be reminded</option>
-                                        <option>Always</option>
-                                        <option>1 week before</option>
-                                        <option>3 days before</option>
-                                        <option>1 day before</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <label for "task-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
-                                <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="" required>
-                            </div>
-                            <div class="mt-4">
-                                <label for "task-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
-                                <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="" required></textarea>
-                            </div>
-                            <div class="flex items-center justify-center mt-4">
-                                <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+                                <button type="submit" id="submit-button" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
                             </div>
                         </div>
                     </form>
                 </div>
             </dialog>
         </section>
-
-
-
-
-    <!-- <div class="card flex not-prose p-4 w-full">
-    <div id="calendar-custom"></div>
-    </div>
-
-    <button type="button" class="btn hidden" id="modalTrigger"  aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar-event-modal" data-overlay="#calendar-event-modal"></button>
-
-    <div id="calendar-event-modal" class="overlay modal overlay-open:opacity-100 hidden" role="dialog" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-header">
-            <h3 class="modal-title" id="modalTitle">Task</h3>
-            <button type="button" class="btn btn-text btn-circle btn-sm absolute end-3 top-3" aria-label="Close" data-overlay="#calendar-event-modal"><span class="icon-[tabler--x] size-4"></span></button>
-        </div>
-        <form id="eventForm">
-            <div class="modal-body pt-0">
-            <div class="mb-4">
-                <label class="label-text" for="eventTitle"> Add event title below </label>
-                <input type="text" id="eventTitle" class="input" placeholder="Event title" required />
-            </div>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-soft btn-secondary" data-overlay="#calendar-event-modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save changes</button>
-            </div>
-        </form>
-        </div>
-    </div>
-    </div> -->
-
-
-
-
-
-
-
-
-        <!-- <section>
-            <button class="btn" onclick="my_modal_3.showModal()">Create a Task</button>
-            <dialog id="my_modal_3" class="modal">
-                <div class="modal-box max-w-3xl">
-                    <form method="dialog">
-                        <h3 class="test-lg font-bold">Create a task</h3>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                        <div>
-                            <form class="max-w-3xl mx-auto" action="{{ url_for('main.register_page') }}" method="POST">
-                                <div class="flex flex-row gap-4 my-4">
-                                    <div class="flex-1">
-                                        <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
-                                        <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
-                                    </div>
-                                    <div class="flex-1">
-                                        <label for "reminder-date" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
-                                        <select id="reminder-date" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
-                                            <option disabled selected>Select date to be reminded</option>
-                                            <option>Always</option>
-                                            <option>1 week before</option>
-                                            <option>3 days before</option>
-                                            <option>1 day before</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <label for "task-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
-                                    <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
-                                </div>
-                                <div class="mt-4">
-                                    <label for "task-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
-                                    <textarea id="task-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
-                                </div>
-                                <div class="flex items-center justify-center mt-4">
-                                    <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-                    </form>
-                </div>
-            </dialog>
-        </section> -->
     </main>
 </body>
 </html>
