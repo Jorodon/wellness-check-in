@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
 
     <script>
         window.onload = async function fetchCheckinStatus() {
@@ -36,12 +37,109 @@
         window.addEventListener('DOMContentLoaded', loadTodayStatus);
     </script>
 
+    <script defer>
+
+        // async function fetchEventHistory() {
+        //     try {
+        //         const token = localStorage.getItem('jwtToken');
+        //         const eventHistoryResponse = await fetch('/calendar/history', {
+        //             method: 'GET',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'Authorization': 'Bearer ${token}'
+        //             },
+        //         });
+
+        //         if (eventHistoryResponse.status === 404) {
+        //             document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
+        //             return;
+        //         }
+
+        //         const events = await response.json();
+        //     } catch (error){
+        //         document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+        //     }
+        // }
+
+        function addDays(date, days) {
+            const result = new Date(date)
+            result.setDate(result.getDate() + days)
+            return result
+        }
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+            })
+        }
+
+        const today = new Date()
+        
+        const events = [
+            {
+            title: 'Past Event',
+            start: addDays(today, -2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'All Day Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'Long Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            end: addDays(today, 5).toISOString().split('T')[0],
+            classNames: ['fc-event-primary']
+            }
+        ]
+
+        let selectedEvent = null
+        let selectedDateInfo = null
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendar = document.getElementById('calendar')
+            const calendarList = document.getElementById('calendar-list')
+
+            const calendarObj = new FullCalendar.Calendar(calendar, {
+                initialView: 'dayGridMonth',
+                editable: true,
+                direction: 'ltr',
+                eventResizableFromStart: true,
+                selectable: true,
+                headerToolbar: {
+                left: 'title prev,next',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: events
+            })
+
+            const calendarListObj = new FullCalendar.Calendar(calendarList, {
+                initialView: 'listWeek',
+                editable: true,
+                direction: 'ltr',
+                eventResizableFromStart: true,
+                selectable: true,
+                contentHeight: 'auto',
+                headerToolbar: {
+                left: 'title',
+                right: 'prev,next'
+                },
+                events: events
+            })
+            
+            calendarObj.render()
+            calendarListObj.render()
+        });
+    </script>
+    
 </head>
 <body>
-    <main class="max-w-6xl mx-auto p-6">
+    <main class="mx-auto max-w-screen-2xl p-6">
         <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Gator Check-In!</h1>
 
-        <section class="grid grid-cols-2 gap-8 justify-items-center">
+        <section class="flex flex-row gap-8 justify-items-center mb-4">
             <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
                 <p id="checkin-status-message">Updating daily check-in status...</p>
@@ -51,16 +149,68 @@
                     <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
                 </div>
             </div>
+
             <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Journal</h2>
             </div>
+        </section>
+
+        <section class="flex flex-col gap-8 justify-items-center">
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Calendar</h2>
+                <div class="card flex flex-row p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
+                    <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs overflow-visible"></div>
+                    <div class="flex-1 grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                        <h2 class="font-semibold mb-4">Upcoming Events</h2>
+                        <div id="calendar-list" class="h-auto px-1"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
             </div>
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Calendar</h2>
+
             </div>
         </section>
+
+
+{#
+        <section class="grid grid-cols-2 grid-rows-5 gap-8 justify-items-center">
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
+                <p id="checkin-status-message">Updating daily check-in status...</p>
+                <div id="checkin-results" class="hidden mt-4 space-y-4">
+                    <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
+                    <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
+                    <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
+                </div>
+            </div>
+
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Journal</h2>
+            </div>
+
+            <div class="col-span-2 row-span-2 w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Calendar</h2>
+                <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
+                    <div id='calendar' class="flex-1"></div>
+                    <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                        <div class="flex flex-col">
+                            <h2 class="font-semibold mb-4">Upcoming Events</h2>
+                            <div id="calendar-list" class="flex-1 px-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Statistics</h2>
+            </div>
+
+            </div>
+        </section>
+#}
     </main>
     
 </body>
