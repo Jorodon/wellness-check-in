@@ -1,1 +1,10 @@
 @import "tailwindcss";
+@plugin "daisyui";
+
+@import "flyonui/src/vendor/fullcalendar.css";
+@import "flyonui/src/vendor/flatpickr.css";
+
+.flatpickr-calendar {
+    z-index: 9999 !important;
+}
+@import "tailwindcss";

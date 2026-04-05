@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint, current_app, request, render_template
 from ..extensions import db
+from ..extensions import db
+
 
 main = Blueprint('main', __name__)
 
@@ -72,3 +74,6 @@ def reset_db():
     db.drop_all()
     db.create_all()
     return "Development database reset complete."
+
+
+
