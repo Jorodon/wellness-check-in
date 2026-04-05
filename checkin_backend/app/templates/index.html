@@ -4,22 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link href="../static/css/output.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
 </head>
 <body>
-    <h1>Welcome to Gator Check-In</h1>
-    <div>
-        <a href="{{ url_for('main.login_page') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-        Login
-        </a>
-        <!---<button>Login</button>
-        <a href="./pages/login.html">To Login Page</a>
-    -->
-    </div>
-    <div>
-        <a href="{{ url_for('main.register_page') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-        Register
-        </a>
-    </div>
+    <main>
+        <div class="grid grid-cols-3 grid-rows-3 h-screen w-screen justify-center">
+            <div class="col-start-2 row-start-2 item-center">
+                <div class="flex flex-col border bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h1 class="text-xl text-center font-bold mt-4">Welcome to Gator Check-In!</h1>
+                    <div class="flex flex-col p-4 gap-4 items-center">
+                        <a href="{{ url_for('main.login_page') }}" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Login</a>
+                        <a href="{{ url_for('main.register_page') }}" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-md font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
