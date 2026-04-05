@@ -11,30 +11,30 @@
         window.onload = async function fetchCheckinStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
-                const checkinResponse = await fetch('/checkin/today', {
+                const checkinResponse = await fetch('/checkins/today', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ${token}'
+                        'Authorization': `Bearer ${token}`
                     },
                 });
 
                 if (checkinResponse.status === 404) {
                     document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
+                    alert(loginReturn.error || "An unknown error has occurred");
                     return;
                 }
 
-                const checkinJsonData = await response.json();
-                document.getElementById('mood-data').innerText = checkin_json_data.mood;
-                document.getElementById('stress-data').innerText = checkin_json_data.stress;
-                document.getElementById('energy-data').innerText = checkin_json_data.energy;
+                const checkinJsonData = await checkinResponse.json();
+                document.getElementById('mood-data').innerText = checkinJsonData.mood;
+                document.getElementById('stress-data').innerText = checkinJsonData.stress;
+                document.getElementById('energy-data').innerText = checkinJsonData.energy;
                 document.getElementById('checkin-status-message').classList.add('hidden');
                 document.getElementById('checkin-results').classList.remove('hidden');
             } catch (error){
                 document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
             }
         }
-        window.addEventListener('DOMContentLoaded', loadTodayStatus);
     </script>
 
     <script defer>
@@ -147,6 +147,9 @@
                     <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
                     <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
                     <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
+                </div>
+                <div class="flex items-center justify-center m-4">
+                    <a href="{{ url_for('main.checkin_page') }}" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Go to daily check-in</a>
                 </div>
             </div>
 

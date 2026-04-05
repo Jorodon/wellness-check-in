@@ -28,7 +28,7 @@
                 const loginReturn = await loginResponse.json();
 
                 if (loginResponse.ok) {
-                    localStorage.setItem('jwtToken', loginReturn.data.access-token);
+                    localStorage.setItem('jwtToken', loginReturn['access-token']);
                     window.location.href = "/home";
                 } else {
                     alert(loginReturn.error || "An unknown error has occurred");
