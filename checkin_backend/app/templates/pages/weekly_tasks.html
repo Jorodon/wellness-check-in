@@ -30,17 +30,15 @@
         });
     </script> -->
 
-    
     <script defer>
-
-        async function fetchEventsToday(info) {
+        async function fetchEvents(info) {
             try {
                 const token = localStorage.getItem('jwtToken');
-                const eventHistoryResponse = await fetch('/calendar/history', {
+                const eventHistoryResponse = await fetch('/calendar/events', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ${token}'
+                        'Authorization': `Bearer ${token}`
                     },
                 });
 
@@ -49,51 +47,8 @@
                     return;
                 }
 
-                const events = await response.json();
-            } catch (error){
-                document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
-            }
-        }
-
-        async function fetchEventsWeek(info) {
-            try {
-                const token = localStorage.getItem('jwtToken');
-                const eventHistoryResponse = await fetch('/calendar/history', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ${token}'
-                    },
-                });
-
-                if (eventHistoryResponse.status === 404) {
-                    document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-                    return;
-                }
-
-                const events = await response.json();
-            } catch (error){
-                document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
-            }
-        }
-
-        async function fetchEventsMonth(info) {
-            try {
-                const token = localStorage.getItem('jwtToken');
-                const eventHistoryResponse = await fetch('/calendar/history', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ${token}'
-                    },
-                });
-
-                if (eventHistoryResponse.status === 404) {
-                    document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-                    return;
-                }
-
-                const events = await response.json();
+                const events = await eventHistoryResponse.json();
+                return events;
             } catch (error){
                 document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
             }
@@ -165,13 +120,14 @@
                 //events: events,
                 events: async function(info, successCallback, failureCallback) {
                     try {
-                        if (calendar.view.type === 'dayGridMonth') {
-                            events = await fetchEventsToday(info)
-                        } else if (calendar.view.type === 'timeGridWeek') {
-                            events = await fetchEventsWeek(info)
-                        } else {
-                            events = await fetchEventsMonth(info)
-                        }
+                        // if (calendar.view.type === 'dayGridMonth') {
+                        //     events = await fetchEventsToday(info)
+                        // } else if (calendar.view.type === 'timeGridWeek') {
+                        //     events = await fetchEventsWeek(info)
+                        // } else {
+                        //     events = await fetchEvents(info)
+                        // }
+                        events = await fetchEvents(info)
                         successCallback(events)
                     } catch (error) {
                         failureCallback(error)
@@ -211,7 +167,21 @@
                         classNames: array of strings
                         description: string
                         */
+
+                        /*
+                        title = data.get("title")
+                        description = data.get("description")
+                        start_time_str = data.get("start_time")
+                        end_time_str = data.get("end_time")
+                        item_type = data.get("item_type")
+                        class_names = data.get("class_names")
+                        is_recurring = data.get("is_recurring")
+                        recurrence = data.get("recurrence")
+                        repeat_count = data.get("repeat_count", 1)
+
+                        */
                         const reminderData = {
+                            
                             id: info.event.id,
                             groupId: info.event.groupId,
                             title: info.event.title,
@@ -221,7 +191,7 @@
                             description: document.getElementById('reminder-description').value
                         }
 
-                        const reminderResponse = await fetch("{{ url_for('calendar.addReminder') }}", {
+                        const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -292,10 +262,11 @@
                 description: document.getElementById('reminder-description').value
             }
 
-            const reminderResponse = await fetch("{{ url_for('calendar.addReminder') }}", {
+            const reminderResponse = await fetch('/calendar/create_events', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(reminderData)
             });
@@ -372,7 +343,7 @@
             <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
                 <div class="modal-box max-w-3xl">
                     <!--ADD ROUTE FOR -->
-                    <form class="max-w-3xl mx-auto" action="{{ url_for('auth.register') }}" method="POST">
+                    <form class="max-w-3xl mx-auto">
                         <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
                         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         <div>
