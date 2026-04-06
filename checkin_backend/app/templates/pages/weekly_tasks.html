@@ -8,6 +8,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     <!-- <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -31,7 +32,32 @@
     </script> -->
 
     <script defer>
-        async function fetchEvents(info) {
+        //document.addEventListener('DOMContentLoaded', async function fetchEvents(info) {
+
+        // async function fetchEvents() {
+        //     try {
+        //         const token = localStorage.getItem('jwtToken');
+        //         const eventHistoryResponse = await fetch('/calendar/events', {
+        //             method: 'GET',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'Authorization': `Bearer ${token}`
+        //             },
+        //         });
+
+        //         if (eventHistoryResponse.status === 404) {
+        //             alert(loginReturn.error || "No events have been added yet.");
+        //             return;
+        //         }
+
+        //         const events = await eventHistoryResponse.json();
+        //         return events;
+        //     } catch (error){
+        //         alert(events.error || "An unknown error has occurred");
+        //         //document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+        //     }
+        // }
+        async function fetchEvents(info, successCallback, failureCallback) {
             try {
                 const token = localStorage.getItem('jwtToken');
                 const eventHistoryResponse = await fetch('/calendar/events', {
@@ -43,14 +69,13 @@
                 });
 
                 if (eventHistoryResponse.status === 404) {
-                    document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-                    return;
+                    console.error("No events have been added yet.");
                 }
 
                 const events = await eventHistoryResponse.json();
-                return events;
+                successCallback(events)
             } catch (error){
-                document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+                console.error("No events have been added yet.");
             }
         }
 
@@ -68,37 +93,6 @@
         }
 
         const today = new Date()
-        
-        let events = [
-            {
-            title: 'Past Event',
-            start: addDays(today, -2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'All Day Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'Long Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            end: addDays(today, 5).toISOString().split('T')[0],
-            classNames: ['fc-event-primary']
-            },
-            {
-            groupId: '999',
-            title: 'Coding session',
-            start: addDays(today, 1).toISOString().split('T')[0] + 'T16:00:00',
-            classNames: ['fc-event-secondary']
-            },
-            {
-            groupId: '999',
-            title: 'Coding session',
-            start: addDays(today, 8).toISOString().split('T')[0] + 'T16:00:00',
-            classNames: ['fc-event-secondary']
-            }
-        ]
 
         let selectedEvent = null
         let selectedDateInfo = null
@@ -118,24 +112,24 @@
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 //events: events,
-                events: async function(info, successCallback, failureCallback) {
-                    try {
-                        // if (calendar.view.type === 'dayGridMonth') {
-                        //     events = await fetchEventsToday(info)
-                        // } else if (calendar.view.type === 'timeGridWeek') {
-                        //     events = await fetchEventsWeek(info)
-                        // } else {
-                        //     events = await fetchEvents(info)
-                        // }
-                        events = await fetchEvents(info)
-                        successCallback(events)
-                    } catch (error) {
-                        failureCallback(error)
-                    }
-                },
-                select: function (info) {
+                events: fetchEvents,
+                //     try {
+                //         // if (calendar.view.type === 'dayGridMonth') {
+                //         //     events = await fetchEventsToday(info)
+                //         // } else if (calendar.view.type === 'timeGridWeek') {
+                //         //     events = await fetchEventsWeek(info)
+                //         // } else {
+                //         //     events = await fetchEvents(info)
+                //         // }
+                //         let eventList = await fetchEvents(info)
+                //         successCallback(eventList)
+                //         return eventList
+                //     } catch (error) {
+                //         failureCallback(error)
+                //     }
+                // },
+                select: async function () {
                     selectedEvent = null
-                    selectedDateInfo = info
                     document.getElementById('reminder-header').textContent = 'Create a New Reminder'
                     document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = ''
@@ -144,69 +138,83 @@
                     document.querySelector('#reminder-creation-modal #reminder-description').value = ''
 
                     document.getElementById('submit-button').textContent = 'Create Reminder'
+                    document.getElementById('submission-form').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const startT = new Date(document.getElementById('flatpickr-date').value)
+                        const endT = new Date(document.getElementById('flatpickr-date').value)
+                        const reminderData = {
+                            title: document.getElementById('reminder-name').value,
+                            description: document.getElementById('reminder-description').value,
+                            start_time: startT.toISOString(),
+                            end_time: addDays(endT,1).toISOString(),
+                            item_type: 'event',
+                            class_names: ['fc-event-primary'],
+                            is_recurring: false,
+                            recurrence: null,
+                            repeat_count: 1
+                        }
+
+                        const token = localStorage.getItem('jwtToken');
+                        const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(reminderData)
+                        });
+
+                        const reminderReturn = await reminderResponse.text();
+                        if (!reminderResponse.ok) {
+                            console.error(reminderReturn.error)
+                        }
+                        else {
+                            document.getElementById('reminder-creation-modal').close()
+                            calendarObj.refetchEvents()
+                            calendarListObj.refetchEvents()
+                        }
+                    })
                 },
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'Edit Reminder'
                     document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
-                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
 
                     document.getElementById('submit-button').textContent = 'Save Changes'
-                },
-                newEventSubmit: function (info) {
-                    document.querySelector('form').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        /*
-                        title: string
-                        groupId: string
-                        start: ISOString
-                        end: ISOString
-                        classNames: array of strings
-                        description: string
-                        */
+                    // document.querySelector('form').addEventListener('submit', async (e) => {
+                    //     e.preventDefault();
 
-                        /*
-                        title = data.get("title")
-                        description = data.get("description")
-                        start_time_str = data.get("start_time")
-                        end_time_str = data.get("end_time")
-                        item_type = data.get("item_type")
-                        class_names = data.get("class_names")
-                        is_recurring = data.get("is_recurring")
-                        recurrence = data.get("recurrence")
-                        repeat_count = data.get("repeat_count", 1)
-
-                        */
-                        const reminderData = {
+                    //     const reminderData = {
                             
-                            id: info.event.id,
-                            groupId: info.event.groupId,
-                            title: info.event.title,
-                            start: info.event.start.toISOString().split('T'),
-                            end: info.event.start.toISOString().split('T'),
-                            classNames: info.event.classNames,
-                            description: document.getElementById('reminder-description').value
-                        }
+                    //         id: info.event.id,
+                    //         groupId: info.event.groupId,
+                    //         title: info.event.title,
+                    //         start: info.event.start.toISOString().split('T'),
+                    //         end: info.event.start.toISOString().split('T'),
+                    //         classNames: info.event.classNames,
+                    //         description: document.getElementById('reminder-description').value
+                    //     }
 
-                        const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(reminderData)
-                        });
+                    //     const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
+                    //         method: 'POST',
+                    //         headers: {
+                    //             'Content-Type': 'application/json'
+                    //         },
+                    //         body: JSON.stringify(reminderData)
+                    //     });
 
-                        const reminderReturn = await reminderResponse.json();
+                    //     const reminderReturn = await reminderResponse.json();
                         
-                        if (reminderResponse.ok) {
-                            //window.location.href = "/login";
-                        } else {
-                            alert(reminderReturn.error || "An unknown error has occurred");
-                        }
-                    })
+                    //     if (reminderResponse.ok) {
+                    //         //window.location.href = "/login";
+                    //     } else {
+                    //         alert(reminderReturn.error || "An unknown error has occurred");
+                    //     }
+                    // })
                 }
             })
 
@@ -220,7 +228,7 @@
                 left: 'title',
                 right: 'prev,next'
                 },
-                events: events,
+                events: fetchEvents,
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'Edit Reminder'
@@ -240,7 +248,7 @@
     </script>
 
 {#
-    <script>
+    <!-- <script>
         document.querySelector('form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const today = new Date()
@@ -279,7 +287,7 @@
                 alert(reminderReturn.error || "An unknown error has occurred");
             }
         });
-    </script>
+    </script> -->
 #}
 
     <script>
@@ -339,12 +347,16 @@
                 </div>
             </div>
 
+            <!-- <button data-modal-target="reminder-creation-modal" data-modal-toggle="reminder-creation-modal" class="hidden"></button> -->
+
             <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
                 <div class="modal-box max-w-3xl">
+                    <form id="close-form" method="dialog">
+                        <button id="close-button" type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
                     <!--ADD ROUTE FOR -->
-                    <form class="max-w-3xl mx-auto">
+                    <form id="submission-form" method="dialog" class="max-w-3xl mx-auto">
                         <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         <div>
                             <div class="flex flex-row gap-4 my-4">
                                 <div class="flex-1">

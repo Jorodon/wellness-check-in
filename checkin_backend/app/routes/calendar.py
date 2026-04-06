@@ -12,16 +12,18 @@ calendar_bp = Blueprint("calendar", __name__, url_prefix="/calendar")
 def event_to_dict(event):
     return {
         "id": event.id,
-        "user_id": event.user_id,
         "title": event.title,
         "description": event.description,
-        "start_time": event.start_time.isoformat() if event.start_time else None,
-        "end_time": event.end_time.isoformat() if event.end_time else None,
-        "item_type": event.item_type,
-        "class_name": event.class_name,
-        "group_id": event.group_id,
-        "is_recurring": event.is_recurring,
-        "recurrence": event.recurrence
+        "start": event.start_time.isoformat() if event.start_time else None,
+        "end": event.end_time.isoformat() if event.end_time else None,
+        "classNames": event.class_names,
+        "groupId": event.group_id,
+        #"is_recurring": event.is_recurring,
+        #"recurrence": event.recurrence,
+        "extendedProps": {
+            "item_type": event.item_type,
+            "user_id": event.user_id
+        }
     }
 
 
@@ -60,7 +62,7 @@ def get_next_datetime(dt, recurrence):
 
 
 # POST - Create event(s)
-@calendar_bp.route("/events", methods=["POST"])
+@calendar_bp.route("/create_events", methods=["POST"])
 @jwt_required()
 def create_event():
     user_id = int(get_jwt_identity())
@@ -131,7 +133,7 @@ def create_event():
             db.session.add(event)
             created_events.append(event)
 
-            current_start = get_next_datetime((current_start, recurrence))
+            current_start = get_next_datetime(current_start, recurrence)
             if current_end:
                 current_end = get_next_datetime(current_end, recurrence)
 
@@ -149,7 +151,7 @@ def create_event():
                       )
 
         db.session.add(event)
-        created_events(event)
+        created_events.append(event)
 
     db.session.commit()
 
@@ -162,7 +164,7 @@ def create_event():
 @calendar_bp.route("/events", methods=["GET"])
 @jwt_required()
 def get_events():
-    user_id = str(get_jwt_identity())
+    user_id = int(get_jwt_identity())
 
     events = Event.query.filter_by(user_id=user_id).order_by(Event.start_time).all()
 
@@ -225,7 +227,7 @@ def update_event(event_id):
 # DELETE - event(s)
 @calendar_bp.route("/event/<int:event_id>", methods=["DELETE"])
 @jwt_required()
-def delete_evetn(event_id):
+def delete_event(event_id):
     user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
