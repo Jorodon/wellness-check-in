@@ -18,11 +18,11 @@ def event_to_dict(event):
         "end": event.end_time.isoformat() if event.end_time else None,
         "classNames": event.class_names,
         "groupId": event.group_id,
-        #"is_recurring": event.is_recurring,
-        #"recurrence": event.recurrence,
         "extendedProps": {
             "item_type": event.item_type,
-            "user_id": event.user_id
+            "user_id": event.user_id,
+            #"is_recurring": event.is_recurring,
+            #"recurrence": event.recurrence
         }
     }
 
