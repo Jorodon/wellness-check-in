@@ -15,14 +15,27 @@ def register():
 
     username = data.get("username")
     email = data.get("email")
-    password = data.get("password")
+    password1 = data.get("password1")
+    password2 = data.get("password2")
 
     # validation
-    if not username or not email or not password:
+    if not username or not email or not password1:
         return jsonify({"error": "Missing fields"}), 400
 
+    email = email.lower()
+
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({"error": "Email already registered"}), 400
+
+    if len(password1) < 8:
+        return jsonify({"error": "Password has to be at least 8 characters"}), 400
+
+    if password1 != password2:
+        return jsonify({"error": "Password does not match"}), 400
+
     # hash password
-    hashed_password = generate_password_hash(password)
+    hashed_password = generate_password_hash(password1)
 
     # create user
     new_user = User(username=username,
