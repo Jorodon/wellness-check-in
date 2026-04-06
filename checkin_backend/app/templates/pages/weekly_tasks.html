@@ -56,6 +56,7 @@
             const calendar = document.getElementById('calendar')
             const calendarList = document.getElementById('calendar-list')
             const eventForm = document.getElementById('submission-form')
+            const deleteEvent = document.getElementById('delete-event')
 
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
@@ -76,19 +77,22 @@
                     document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
                     document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.start.toISOString().split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = ''
+                    document.getElementById('delete-button').classList.add('hidden')
                     document.getElementById('submit-button').textContent = 'Create Reminder'
+
                     document.getElementById('reminder-creation-modal').showModal()
                 },
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'Edit Reminder'
-                    document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
                     document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr.split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
-
+                    document.getElementById('delete-button').classList.remove('hidden')
                     document.getElementById('submit-button').textContent = 'Save Changes'
+
+                    document.getElementById('reminder-creation-modal').showModal()
                 }
             })
 
@@ -106,13 +110,14 @@
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'Edit Reminder'
-                    document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
                     document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr.split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
-
+                    document.getElementById('delete-button').classList.remove('hidden')
                     document.getElementById('submit-button').textContent = 'Save Changes'
+                    
+                    document.getElementById('reminder-creation-modal').showModal()
                 }
             })
             
@@ -154,6 +159,31 @@
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(reminderData)
+                });
+
+                const reminderReturn = await reminderResponse.text();
+                if (!reminderResponse.ok) {
+                    console.error(reminderReturn.error)
+                }
+                else {
+                    document.getElementById('reminder-creation-modal').close()
+                    calendarObj.refetchEvents()
+                    calendarListObj.refetchEvents()
+                }
+            })
+
+            deleteEvent.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                let eventUrl = 'calendar/event/' + selectedEvent.id
+                const token = localStorage.getItem('jwtToken');
+                const reminderResponse = await fetch(eventUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    //body: JSON.stringify(reminderData)
                 });
 
                 const reminderReturn = await reminderResponse.text();
@@ -256,10 +286,13 @@
                                 <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
                                 <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
                             </div>
-                            <div class="flex items-center justify-center mt-4">
+                            <div class="justify-center mt-4 gap-8">
                                 <button type="submit" id="submit-button" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
                             </div>
                         </div>
+                    </form>
+                    <form id="delete-event">
+                        <button type="submit" id="delete-button" class="btn btn-md block mb-3 hidden bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Delete Reminder</button>
                     </form>
                 </div>
             </dialog>
