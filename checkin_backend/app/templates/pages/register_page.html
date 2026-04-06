@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const registrationFormData = {
+                    username: document.getElementById('username').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                }
+
+                const registrationResponse = await fetch("{{ url_for('auth.register') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(registrationFormData)
+                });
+
+                const registrationReturn = await registrationResponse.json();
+                
+                if (registrationResponse.ok) {
+                    window.location.href = "/login";
+                } else {
+                    alert(registrationReturn.error || "An unknown error has occurred");
+                }
+            });
+        });
+    </script>
+
+</head>
+<body>
+    <h1>Registration Page</h1>
+    <div>
+        <!--ADD ROUTE TO TASK CREATION LOGIC HERE-->
+        <form class="max-w-3xl mx-auto" action="{{ url_for('auth.register') }}" method="POST">
+            <div class="mt-4">
+                <label for "username" class="block mb-3 text-sm font-medium text-heading">Username</label>
+                <input type="text" id="username" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="JohnS" required>
+            </div>
+            <div class="mt-4">
+                <label for "email" class="block mb-3 text-sm font-medium text-heading">Email</label>
+                <input type="email" id="email" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="JohnS@email.com" required>
+            </div>
+            <div class="mt-4">
+                <label for "password" class="block mb-3 text-sm font-medium text-heading">Password</label>
+                <input type="password" id="password" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="JohnS@email.com" required>
+            </div>
+            <div class="flex items-center justify-center mt-4">
+                <button type="submit" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

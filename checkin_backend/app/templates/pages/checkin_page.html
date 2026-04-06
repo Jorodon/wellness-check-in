@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gator Check-In</title>
+    <link href="../../static/css/output.css" rel="stylesheet">
+    <style>
+        /* Thin black line for sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: #000;
+            outline: none;
+        }
+
+        /* Black circle for the slider handle */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #000;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const token = localStorage.getItem('jwtToken');
+
+                const loginFormData = {
+                    mood: Number(document.getElementById('mood').value),
+                    stress: Number(document.getElementById('stress').value),
+                    energy: Number(document.getElementById('energy').value)
+                }
+
+                const loginResponse = await fetch("{{ url_for('checkins.create_checkin') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(loginFormData)
+                });
+
+                const loginReturn = await loginResponse.json();
+
+                if (loginResponse.ok) {
+                    window.location.href = "/home";
+                } else {
+                    alert(loginReturn.error || "An unknown error has occurred");
+                }
+            });
+        });
+    </script>
+
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="navbar bg-base-100 shadow-sm">
+                <div class="navbar-start">
+                    <ul class="menu menu-horizontal px-1">
+                        <li><a href="{{ url_for('main.home_page') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('main.checkin_page') }}">Daily Check-In</a></li>
+                        <li><a href="{{ url_for('main.weekly_tasks') }}">Weekly Tasks</a></li>
+                        <li><a href="{{ url_for('main.journal_page') }}">Journal</a></li>
+                        <li><a href="{{ url_for('main.statistics_page') }}">Statistics</a></li>
+                        <li><a href="{{ url_for('main.resources_page') }}">Resources</a></li>
+                    </ul>
+                </div>
+                <div class="navbar-center">
+                    <a class="btn btn-ghost text-xl">Gator Check-In</a>
+                </div>
+                <div class="navbar-end">
+                    <button class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
+                    </button>
+                    <button class="btn btn-ghost btn-circle">
+                        <div class="indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
+                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="bg-[#f5f5f5] min-h-screen flex items-center justify-center font-sans text-black">
+        <div class="border border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
+            <h1 class="text-3xl text-center mb-10 font-medium">Daily Check-In</h1>
+
+            <div class="bg-[#eeeeee] border border-gray-300 p-12 mx-auto w-[90%]">
+                <form class="space-y-12">
+                    
+                    <div class="flex flex-col">
+                        <div class="flex justify-between text-sm font-bold mb-1">
+                            <span>Mood Levels</span>
+                            <span id="moodVal">0</span>
+                        </div>
+                        <input type="range" id="mood" min="1" max="5" value="1" oninput="updateVal('mood')">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <div class="flex justify-between text-sm font-bold mb-1">
+                            <span>Stress Levels</span>
+                            <span id="stressVal">0</span>
+                        </div>
+                        <input type="range" id="stress" min="1" max="5" value="1" oninput="updateVal('stress')">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <div class="flex justify-between text-sm font-bold mb-1">
+                            <span>Sleep Hours</span>
+                            <span id="sleepVal">0</span>
+                        </div>
+                        <input type="range" id="sleep" min="1" max="12" value="1" oninput="updateVal('sleep')">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <div class="flex justify-between text-sm font-bold mb-1">
+                            <span>Energy Levels</span>
+                            <span id="energyVal">0</span>
+                        </div>
+                        <input type="range" id="energy" min="1" max="5" value="1" oninput="updateVal('energy')">
+                    </div>
+
+                    <div class="flex justify-center pt-6">
+                        <button type="submit" class="bg-[#4285f4] text-white border border-black px-24 py-2 rounded-md font-medium shadow-sm hover:bg-blue-600 transition-colors">
+                            Submit Check-In
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+
+    <script>
+        function updateVal(id) {
+            const slider = document.getElementById(id);
+            const output = document.getElementById(id + 'Val');
+            output.innerHTML = slider.value;
+        }
+    </script>
+
+</body>
+</html>

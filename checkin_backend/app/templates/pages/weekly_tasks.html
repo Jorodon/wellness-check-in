@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="../../static/css/output.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let calendarEl = document.getElementById('calendar');
+            let eventDay = new Date();
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                buttonText: {
+                    today: 'Today'
+                },
+                events: [
+                    {
+                        title: 'Learn JavaScript',
+                        start: eventDay.toISOString().split('T')[0],
+                        classNames: ['fc-event-primary']
+                    }
+                ]
+            });
+            calendar.render()
+        });
+    </script> -->
+
+    <script defer>
+        async function fetchEvents(info) {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const eventHistoryResponse = await fetch('/calendar/events', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (eventHistoryResponse.status === 404) {
+                    document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
+                    return;
+                }
+
+                const events = await eventHistoryResponse.json();
+                return events;
+            } catch (error){
+                document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+            }
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date)
+            result.setDate(result.getDate() + days)
+            return result
+        }
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+            })
+        }
+
+        const today = new Date()
+        
+        let events = [
+            {
+            title: 'Past Event',
+            start: addDays(today, -2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'All Day Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            classNames: ['fc-event-info']
+            },
+            {
+            title: 'Long Event',
+            start: addDays(today, 2).toISOString().split('T')[0],
+            end: addDays(today, 5).toISOString().split('T')[0],
+            classNames: ['fc-event-primary']
+            },
+            {
+            groupId: '999',
+            title: 'Coding session',
+            start: addDays(today, 1).toISOString().split('T')[0] + 'T16:00:00',
+            classNames: ['fc-event-secondary']
+            },
+            {
+            groupId: '999',
+            title: 'Coding session',
+            start: addDays(today, 8).toISOString().split('T')[0] + 'T16:00:00',
+            classNames: ['fc-event-secondary']
+            }
+        ]
+
+        let selectedEvent = null
+        let selectedDateInfo = null
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendar = document.getElementById('calendar')
+            const calendarList = document.getElementById('calendar-list')
+
+            const calendarObj = new FullCalendar.Calendar(calendar, {
+                initialView: 'dayGridMonth',
+                editable: true,
+                direction: 'ltr',
+                eventResizableFromStart: true,
+                selectable: true,
+                headerToolbar: {
+                left: 'title prev,next',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                //events: events,
+                events: async function(info, successCallback, failureCallback) {
+                    try {
+                        // if (calendar.view.type === 'dayGridMonth') {
+                        //     events = await fetchEventsToday(info)
+                        // } else if (calendar.view.type === 'timeGridWeek') {
+                        //     events = await fetchEventsWeek(info)
+                        // } else {
+                        //     events = await fetchEvents(info)
+                        // }
+                        events = await fetchEvents(info)
+                        successCallback(events)
+                    } catch (error) {
+                        failureCallback(error)
+                    }
+                },
+                select: function (info) {
+                    selectedEvent = null
+                    selectedDateInfo = info
+                    document.getElementById('reminder-header').textContent = 'Create a New Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = ''
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = today.toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = ''
+
+                    document.getElementById('submit-button').textContent = 'Create Reminder'
+                },
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
+
+                    document.getElementById('submit-button').textContent = 'Save Changes'
+                },
+                newEventSubmit: function (info) {
+                    document.querySelector('form').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        /*
+                        title: string
+                        groupId: string
+                        start: ISOString
+                        end: ISOString
+                        classNames: array of strings
+                        description: string
+                        */
+
+                        /*
+                        title = data.get("title")
+                        description = data.get("description")
+                        start_time_str = data.get("start_time")
+                        end_time_str = data.get("end_time")
+                        item_type = data.get("item_type")
+                        class_names = data.get("class_names")
+                        is_recurring = data.get("is_recurring")
+                        recurrence = data.get("recurrence")
+                        repeat_count = data.get("repeat_count", 1)
+
+                        */
+                        const reminderData = {
+                            
+                            id: info.event.id,
+                            groupId: info.event.groupId,
+                            title: info.event.title,
+                            start: info.event.start.toISOString().split('T'),
+                            end: info.event.start.toISOString().split('T'),
+                            classNames: info.event.classNames,
+                            description: document.getElementById('reminder-description').value
+                        }
+
+                        const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(reminderData)
+                        });
+
+                        const reminderReturn = await reminderResponse.json();
+                        
+                        if (reminderResponse.ok) {
+                            //window.location.href = "/login";
+                        } else {
+                            alert(reminderReturn.error || "An unknown error has occurred");
+                        }
+                    })
+                }
+            })
+
+            const calendarListObj = new FullCalendar.Calendar(calendarList, {
+                initialView: 'listWeek',
+                editable: true,
+                direction: 'ltr',
+                eventResizableFromStart: true,
+                selectable: true,
+                headerToolbar: {
+                left: 'title',
+                right: 'prev,next'
+                },
+                events: events,
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
+                    document.getElementById('reminder-creation-modal').showModal()
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
+
+                    document.getElementById('submit-button').textContent = 'Save Changes'
+                }
+            })
+            
+            calendarObj.render()
+            calendarListObj.render()
+        });
+    </script>
+
+{#
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const today = new Date()
+
+            /*
+            title: string
+            groupId: string
+            start: ISOString
+            end: ISOString
+            classNames: array of strings
+            description: string
+            */
+            const reminderData = {
+                title: document.getElementById('reminder-name').value,
+                start: document.getElementById('flatpickr-date').toISOString().split('T')[0],
+                //end: document.getElementById('flatpickr-date').toISOString().split('T')[0],
+
+                classNames: document.getElement,
+                description: document.getElementById('reminder-description').value
+            }
+
+            const reminderResponse = await fetch('/calendar/create_events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(reminderData)
+            });
+
+            const reminderReturn = await reminderResponse.json();
+            
+            if (reminderResponse.ok) {
+                //window.location.href = "/login";
+            } else {
+                alert(reminderReturn.error || "An unknown error has occurred");
+            }
+        });
+    </script>
+#}
+
+    <script>
+        window.addEventListener('load', function () {
+            // Basic
+            flatpickr('#flatpickr-date', {
+                monthSelectorType: 'static',
+                static: true, 
+                appendTo: document.querySelector('#reminder-creation-modal .modal-box')
+            })
+        })
+    </script>
+
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="navbar bg-base-100 shadow-sm">
+                <div class="navbar-start">
+                    <ul class="menu menu-horizontal px-1">
+                        <li><a href="{{ url_for('main.home_page') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('main.checkin_page') }}">Daily Check-In</a></li>
+                        <li><a href="{{ url_for('main.weekly_tasks') }}">Weekly Tasks</a></li>
+                        <li><a href="{{ url_for('main.journal_page') }}">Journal</a></li>
+                        <li><a href="{{ url_for('main.statistics_page') }}">Statistics</a></li>
+                        <li><a href="{{ url_for('main.resources_page') }}">Resources</a></li>
+                    </ul>
+                </div>
+                <div class="navbar-center">
+                    <a class="btn btn-ghost text-xl">Gator Check-In</a>
+                </div>
+                <div class="navbar-end">
+                    <button class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
+                    </button>
+                    <button class="btn btn-ghost btn-circle">
+                        <div class="indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
+                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
+                <div id='calendar' class="flex-1"></div>
+                    <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                        <div class="flex flex-col">
+                            <h2 class="font-semibold mb-4">Upcoming Events</h2>
+                            <div id="calendar-list" class="flex-1 menu px-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
+                <div class="modal-box max-w-3xl">
+                    <!--ADD ROUTE FOR -->
+                    <form class="max-w-3xl mx-auto">
+                        <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
+                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        <div>
+                            <div class="flex flex-row gap-4 my-4">
+                                <div class="flex-1">
+                                    <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                    <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                                </div>
+                                <div class="flex-1">
+                                    <label for "reminder-interval" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                    <select id="reminder-interval" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                        <option id="default-interval" disabled selected>Select date to be reminded</option>
+                                        <option>Always</option>
+                                        <option>1 week before</option>
+                                        <option>3 days before</option>
+                                        <option>1 day before</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label for "flatpickr-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
+                                <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            </div>
+                            <div class="mt-4">
+                                <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                                <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
+                            </div>
+                            <div class="flex items-center justify-center mt-4">
+                                <button type="submit" id="submit-button" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
+        </section>
+    </main>
+</body>
+</html>
