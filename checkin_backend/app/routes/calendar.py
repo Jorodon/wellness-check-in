@@ -94,7 +94,7 @@ def create_event():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    if end_time <= start_time:
+    if end_time < start_time:
         return jsonify({"error": "end_time must be after start_time"}), 400
 
     if item_type not in ["event", "task"]:
