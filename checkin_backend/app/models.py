@@ -16,7 +16,7 @@ class CheckIn(db.Model):
     stress = db.Column(db.Integer, nullable=False)
     energy = db.Column(db.Integer, nullable=False)
     sleep_hours = db.Column(db.Float, nullable=True)
-    journal = db.Column(db.Text, nullable=True)
+    journal = db.Column(db.String(length=2000), nullable=True)
 
 
 class Event(db.Model):

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.extensions import db
-from app.models import CheckIn
+from ..extensions import db
+from ..models import CheckIn
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import date
 
@@ -8,7 +8,7 @@ checkins_bp = Blueprint("checkins", __name__)
 
 
 # create check-in
-@checkins_bp.route("/", methods=["POST"])
+@checkins_bp.route("/check-in", methods=["POST"])
 @jwt_required()
 def create_checkin():
     user_id = int(get_jwt_identity())
@@ -72,7 +72,8 @@ def get_today_checkin():
                     "mood": checkin.mood,
                     "stress": checkin.stress,
                     "energy": checkin.energy,
-                    "sleep_hours": checkin.sleep_hours
+                    "sleep_hours": checkin.sleep_hours,
+                    "journal": checkin.journal
                     })
 
 
@@ -82,7 +83,7 @@ def get_today_checkin():
 def get_history():
     user_id = int(get_jwt_identity())
 
-    checkins = CheckIn.query.filter_by(user_id=user_id).all()
+    checkins = CheckIn.query.filter_by(user_id=user_id).order_by(CheckIn.date.desc()).all()
 
     result = []
     for c in checkins:
@@ -90,7 +91,8 @@ def get_history():
                        "mood": c.mood,
                        "stress": c.stress,
                        "energy": c.energy,
-                       "sleep_hours": c.sleep_hours
+                       "sleep_hours": c.sleep_hours,
+                       "journal": c.journal
                        })
 
     return jsonify(result)
