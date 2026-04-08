@@ -39,13 +39,6 @@
             result.setDate(result.getDate() + days)
             return result
         }
-        function formatDate(date) {
-            return date.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-            })
-        }
 
         const today = new Date()
 
@@ -76,7 +69,8 @@
                     document.querySelector('#reminder-creation-modal #reminder-name').value = ''
                     //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
                     document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.start.toISOString().split('T')[0]
-                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.end.toISOString().split('T')[0]
+                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.end.toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.end, -1).toISOString().split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = ''
                     document.getElementById('delete-button').classList.add('hidden')
                     document.getElementById('submit-button').textContent = 'Create Reminder'
@@ -89,7 +83,7 @@
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
                     //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
-                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
                     document.getElementById('delete-button').classList.remove('hidden')
                     document.getElementById('submit-button').textContent = 'Save Changes'
@@ -116,7 +110,9 @@
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
                     //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
-                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
+                    //let endTimeTemp = new Date(info.event.startStr);
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
                     document.getElementById('delete-button').classList.remove('hidden')
                     document.getElementById('submit-button').textContent = 'Save Changes'
@@ -134,7 +130,8 @@
                 const startT = new Date(document.getElementById('flatpickr-start-date').value);
                 const endT = new Date(document.getElementById('flatpickr-end-date').value);
                 let eventType;
-                if (addDays(document.getElementById('flatpickr-start-date').value, 1).toISOString() === endT.toISOString()) {
+                //if (addDays(document.getElementById('flatpickr-start-date').value, 1).toISOString() === endT.toISOString()) {
+                if (startT.toISOString() === endT.toISOString()) {
                     eventType = ['fc-event-info'];
                 }
                 else {
@@ -144,7 +141,7 @@
                     title: document.getElementById('reminder-name').value,
                     description: document.getElementById('reminder-description').value,
                     start_time: startT.toISOString(),
-                    end_time: endT.toISOString(),
+                    end_time: addDays(document.getElementById('flatpickr-end-date').value, 1).toISOString(),
                     item_type: 'event',
                     class_names: eventType,
                     is_recurring: false,
@@ -299,7 +296,7 @@
                                     <input type="text" id="flatpickr-start-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
                                 </div>
                                 <div class="justify-left">
-                                    <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date (Exclusive)</label>
+                                    <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date</label>
                                     <input type="text" id="flatpickr-end-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
                                 </div>      
                                 <!-- <label class="inline-flex justify-right items-center cursor-pointer">
