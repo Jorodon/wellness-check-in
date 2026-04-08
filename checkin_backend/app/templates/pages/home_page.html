@@ -35,66 +35,39 @@
                 document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
             }
         }
-        document.addEventListener('DOMContentLoaded', fetchCheckinStatus);
     </script>
 
     <script defer>
+        async function fetchEvents(info, successCallback, failureCallback) {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const eventHistoryResponse = await fetch('/calendar/events', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
 
-        // async function fetchEventHistory() {
-        //     try {
-        //         const token = localStorage.getItem('jwtToken');
-        //         const eventHistoryResponse = await fetch('/calendar/history', {
-        //             method: 'GET',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'Authorization': 'Bearer ${token}'
-        //             },
-        //         });
+                if (eventHistoryResponse.status === 404) {
+                    console.error("No events have been added yet.");
+                }
 
-        //         if (eventHistoryResponse.status === 404) {
-        //             document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-        //             return;
-        //         }
-
-        //         const events = await response.json();
-        //     } catch (error){
-        //         document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
-        //     }
-        // }
+                const events = await eventHistoryResponse.json();
+                successCallback(events)
+            } catch (error){
+                console.error("No events have been added yet.");
+            }
+        }
+        
 
         function addDays(date, days) {
             const result = new Date(date)
             result.setDate(result.getDate() + days)
             return result
         }
-        function formatDate(date) {
-            return date.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-            })
-        }
 
         const today = new Date()
-        
-        const events = [
-            {
-            title: 'Past Event',
-            start: addDays(today, -2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'All Day Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'Long Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            end: addDays(today, 5).toISOString().split('T')[0],
-            classNames: ['fc-event-primary']
-            }
-        ]
 
         let selectedEvent = null
         let selectedDateInfo = null
@@ -102,6 +75,8 @@
         document.addEventListener('DOMContentLoaded', function () {
             const calendar = document.getElementById('calendar')
             const calendarList = document.getElementById('calendar-list')
+            const eventForm = document.getElementById('submission-form')
+            const deleteEvent = document.getElementById('delete-event')
 
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
@@ -111,30 +86,55 @@
                 selectable: true,
                 headerToolbar: {
                 left: 'title prev,next',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                right: 'dayGridMonth'
                 },
-                events: events
+                //events: events,
+                events: fetchEvents,
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'View Reminder'
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
+
+                    document.getElementById('reminder-creation-modal').showModal()
+                }
             })
 
             const calendarListObj = new FullCalendar.Calendar(calendarList, {
+                displayEventTime: false,
                 initialView: 'listWeek',
                 editable: true,
                 direction: 'ltr',
                 eventResizableFromStart: true,
                 selectable: true,
-                contentHeight: 'auto',
                 headerToolbar: {
                 left: 'title',
                 right: 'prev,next'
                 },
-                events: events
+                events: fetchEvents,
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'View Reminder'
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    //let endTimeTemp = new Date(info.event.startStr);
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
+                    
+                    document.getElementById('reminder-creation-modal').showModal()
+                }
             })
             
             calendarObj.render()
             calendarListObj.render()
         });
     </script>
-    
+
 </head>
 <body>
     <header>
@@ -191,14 +191,61 @@
         <section class="flex flex-col gap-8 justify-items-center">
             <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Calendar</h2>
-                <div class="card flex flex-row p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
-                    <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs overflow-visible"></div>
-                    <div class="flex-1 grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <div class="card flex flex-row gap-4 m-2">
+                    <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs overflow-visible"></div>
+                    <div class="flex-1 flex flex-col grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                         <h2 class="font-semibold mb-4">Upcoming Events</h2>
-                        <div id="calendar-list" class="h-auto px-1"></div>
+                        <div id="calendar-list" class="flex-1 max-h-full object-contain px-1 overflow-auto"></div>
                     </div>
                 </div>
             </div>
+
+            <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
+                <div class="modal-box max-w-3xl">
+                    <form id="close-form" method="dialog">
+                        <button id="close-button" type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
+                    <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
+                    <div>
+                        <div class="flex flex-row gap-4 my-4">
+                            <div class="flex-1">
+                                <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                            </div>
+                            <!-- <div class="flex-1">
+                                <label for "reminder-interval" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
+                                <select id="reminder-interval" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
+                                    <option id="default-interval" disabled selected>Select date to be reminded</option>
+                                    <option>Always</option>
+                                    <option>1 week before</option>
+                                    <option>3 days before</option>
+                                    <option>1 day before</option>
+                                </select>
+                            </div> -->
+                        </div>
+                        <div class="flex flex-row gap-8 mt-4">
+                            <div class="">
+                                <label for "flatpickr-start-date" class="block mb-3 text-sm font-medium text-heading">Start Date</label>
+                                <input type="text" id="flatpickr-start-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            </div>
+                            <div class="justify-left">
+                                <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date</label>
+                                <input type="text" id="flatpickr-end-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            </div>      
+                            <!-- <label class="inline-flex justify-right items-center cursor-pointer">
+                                <span class="select-none text-sm font-medium text-heading">Task</span>
+                                <input type="checkbox" id="type-selector" value="" class="sr-only peer">
+                                <div class="relative mx-3 w-9 h-5 bg-neutral-quaternary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-soft dark:peer-focus:ring-brand-soft rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
+                                <span class="select-none text-sm font-medium text-heading">Event</span>
+                            </label>                       -->
+                        </div>
+                        <div class="mt-4">
+                            <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                            <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+            </dialog>
 
             <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
