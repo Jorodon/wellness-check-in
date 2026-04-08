@@ -73,8 +73,7 @@ def get_today_checkin():
                     "stress": checkin.stress,
                     "energy": checkin.energy,
                     "sleep_hours": checkin.sleep_hours,
-                    "journal": checkin.journal,
-                    "sleep_hours": checkin.sleep_hours
+                    "journal": checkin.journal
                     })
 
 
@@ -92,7 +91,8 @@ def get_history():
                        "mood": c.mood,
                        "stress": c.stress,
                        "energy": c.energy,
-                       "sleep_hours": c.sleep_hours
+                       "sleep_hours": c.sleep_hours,
+                       "journal": c.journal
                        })
 
     return jsonify(result)
