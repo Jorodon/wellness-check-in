@@ -231,7 +231,7 @@ def delete_event(event_id):
     user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
-    delete_scope = data.get("delter_scope", "one")
+    delete_scope = data.get("delete_scope", "one")
 
     event = Event.query.filter_by(id=event_id, user_id=user_id).first()
 
