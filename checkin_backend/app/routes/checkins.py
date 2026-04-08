@@ -73,7 +73,8 @@ def get_today_checkin():
                     "stress": checkin.stress,
                     "energy": checkin.energy,
                     "sleep_hours": checkin.sleep_hours,
-                    "journal": checkin.journal
+                    "journal": checkin.journal,
+                    "sleep_hours": checkin.sleep_hours
                     })
 
 
