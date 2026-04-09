@@ -105,19 +105,19 @@
                 },
                 events: fetchEvents,
                 eventClick: function (info) {
-                    selectedEvent = info.event
-                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
-                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    selectedEvent = info.event;
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder';
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title;
                     //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
-                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0];
                     //let endTimeTemp = new Date(info.event.startStr);
-                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0];
                     //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
-                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
-                    document.getElementById('delete-button').classList.remove('hidden')
-                    document.getElementById('submit-button').textContent = 'Save Changes'
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description;
+                    document.getElementById('delete-button').classList.remove('hidden');
+                    document.getElementById('submit-button').textContent = 'Save Changes';
                     
-                    document.getElementById('reminder-creation-modal').showModal()
+                    document.getElementById('reminder-creation-modal').showModal();
                 }
             })
             
@@ -147,15 +147,15 @@
                     is_recurring: false,
                     recurrence: null,
                     repeat_count: 1
-                }
+                };
 
                 const editStatus = selectedEvent !== null;
-                let eventUrl = '/calendar/create_events'
-                let method = 'POST'
+                let eventUrl = '/calendar/create_events';
+                let method = 'POST';
                 if (editStatus) {
-                    reminderData.id = selectedEvent.id
-                    eventUrl = 'calendar/events/' + selectedEvent.id
-                    method = 'PUT'
+                    reminderData.id = selectedEvent.id;
+                    eventUrl = 'calendar/events/' + selectedEvent.id;
+                    method = 'PUT';
                 }
 
                 const token = localStorage.getItem('jwtToken');
@@ -170,19 +170,19 @@
 
                 const reminderReturn = await reminderResponse.text();
                 if (!reminderResponse.ok) {
-                    console.error(reminderReturn.error)
+                    console.error(reminderReturn.error);
                 }
                 else {
-                    document.getElementById('reminder-creation-modal').close()
-                    calendarObj.refetchEvents()
-                    calendarListObj.refetchEvents()
+                    document.getElementById('reminder-creation-modal').close();
+                    calendarObj.refetchEvents();
+                    calendarListObj.refetchEvents();
                 }
             })
 
             deleteEvent.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                let eventUrl = 'calendar/event/' + selectedEvent.id
+                let eventUrl = 'calendar/event/' + selectedEvent.id;
                 const token = localStorage.getItem('jwtToken');
                 const reminderResponse = await fetch(eventUrl, {
                     method: 'DELETE',
@@ -195,12 +195,12 @@
 
                 const reminderReturn = await reminderResponse.text();
                 if (!reminderResponse.ok) {
-                    console.error(reminderReturn.error)
+                    console.error(reminderReturn.error);
                 }
                 else {
-                    document.getElementById('reminder-creation-modal').close()
-                    calendarObj.refetchEvents()
-                    calendarListObj.refetchEvents()
+                    document.getElementById('reminder-creation-modal').close();
+                    calendarObj.refetchEvents();
+                    calendarListObj.refetchEvents();
                 }
             })
         });
@@ -219,7 +219,7 @@
                 static: true, 
                 appendTo: document.querySelector('#reminder-creation-modal .modal-box')
             })
-        })
+        });
     </script>
 
 </head>

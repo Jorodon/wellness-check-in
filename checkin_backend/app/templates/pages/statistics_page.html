@@ -78,8 +78,6 @@
             const brandTertiaryColor = getBrandTertiaryColor();
 
             const trendHistoryData = await fetchTrendHistory();
-            let mood = trendHistoryData.map(e => Object.values(e)[1])
-            let date = trendHistoryData.map(e => Object.values(e)[0])
             const options = {
             chart: {
                 height: "100%",
@@ -118,7 +116,7 @@
             series: [
                 {
                 name: "Mood",
-                data: mood,
+                data: trendHistoryData.map(e => Object.values(e)[1]),
                 color: brandColor,
                 },
                 {
@@ -139,7 +137,7 @@
                 curve: 'smooth'
             },
             xaxis: {
-                categories: date,
+                categories: trendHistoryData.map(e => Object.values(e)[0]),
                 labels: {
                 show: true,
                 style: {
@@ -163,7 +161,40 @@
             chart.render();
         }
 
+        const drawTable = async() => {
+            const trendHistoryData = await fetchTrendHistory();
+            const trendAverageData = await fetchTrendAverage();
+            const today = new Date();
+            let latestData = trendHistoryData.at(-1);
+            //let latestDate = new Date(latestData);
+            //if (latestDate.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+            if (latestData.date === today.toISOString().split('T')[0]) {
+                document.getElementById('stress-today').textContent = latestData.stress;
+                document.getElementById('mood-today').textContent = latestData.mood;
+                document.getElementById('energy-today').textContent = latestData.energy;
+                document.getElementById('sleep-today').textContent = latestData.sleep;
+            }
+            else {
+                document.getElementById('stress-today').textContent = 'NA';
+                document.getElementById('mood-today').textContent = 'NA';
+                document.getElementById('energy-today').textContent = 'NA';
+                document.getElementById('sleep-today').textContent = 'NA';
+            }
+
+            function round(data) {
+                return Number.parseFloat(data).toFixed(2);
+            }
+            document.getElementById('stress-average').textContent = round(trendAverageData.avg_stress);
+            document.getElementById('mood-average').textContent = round(trendAverageData.avg_mood);
+            document.getElementById('energy-average').textContent = round(trendAverageData.avg_energy);
+            document.getElementById('sleep-average').textContent = round(trendAverageData.avg_sleep)
+
+
+        }
+
+
         document.addEventListener('DOMContentLoaded', drawGraph);
+        document.addEventListener('DOMContentLoaded', drawTable);
     </script>
 </head>
 
