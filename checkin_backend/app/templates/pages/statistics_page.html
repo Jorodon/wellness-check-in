@@ -5,8 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
+    <!-- <script src="/node_modules/apexcharts/dist/apexcharts.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script> -->
+
+    <script>
+        async function fetchTrendHistory() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendHistoryResponse = await fetch('/trends/weekly-history', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (trendHistoryResponse.status === 404) {
+                    console.error(trendHistoryResponse.message);
+                }
+
+                const trendHistoryData = await trendHistoryResponse.json();
+                return trendHistoryData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        async function fetchTrendAverage() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendAverageResponse = await fetch('/trends/weekly-average', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (trendAverageResponse.status === 404) {
+                    console.error(trendAverageResponse.message);
+                }
+
+                const trendAverageData = await trendAverageResponse.json();
+                return trendAverageData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        //function 
+        const drawGraph = async() => {
+        //window.onload = async function drawGraph() {
+
+            const getBrandColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-1').trim();
+            };
+
+            const getBrandSecondaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-2').trim();
+            };
+
+            const getBrandTertiaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-3').trim();
+            };
+
+            const brandColor = getBrandColor();
+            const brandSecondaryColor = getBrandSecondaryColor();
+            const brandTertiaryColor = getBrandTertiaryColor();
+
+            const trendHistoryData = await fetchTrendHistory();
+            let mood = trendHistoryData.map(e => Object.values(e)[1])
+            let date = trendHistoryData.map(e => Object.values(e)[0])
+            const options = {
+            chart: {
+                height: "100%",
+                maxWidth: "100%",
+                type: "line",
+                fontFamily: "Inter, sans-serif",
+                dropShadow: {
+                enabled: false,
+                },
+                toolbar: {
+                show: true,
+                },
+            },
+            tooltip: {
+                enabled: true,
+                x: {
+                show: false,
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            stroke: {
+                width: 6,
+                curve: 'smooth'
+            },
+            grid: {
+                show: true,
+                strokeDashArray: 4,
+                padding: {
+                left: 2,
+                right: 2,
+                top: -26
+                },
+            },
+            series: [
+                {
+                name: "Mood",
+                data: mood,
+                color: brandColor,
+                },
+                {
+                name: "Stress",
+                data: trendHistoryData.map(e => Object.values(e)[2]),
+                color: brandSecondaryColor,
+                },
+                {
+                name: "Energy",
+                data: trendHistoryData.map(e => Object.values(e)[3]),
+                color: brandTertiaryColor,
+                },
+            ],
+            legend: {
+                show: false
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            xaxis: {
+                categories: date,
+                labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body'
+                }
+                },
+                axisBorder: {
+                show: false,
+                },
+                axisTicks: {
+                show: false,
+                },
+            },
+            yaxis: {
+                show: true,
+            },
+            }
+
+            const chart = new ApexCharts(document.getElementById("line-chart"), options);
+            chart.render();
+        }
+
+        document.addEventListener('DOMContentLoaded', drawGraph);
+    </script>
 </head>
-<body>
+
+<body class="flex flex-col h-lvh max-w-screen-2xl overflow-hidden">
     <header>
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
@@ -38,8 +199,59 @@
         </nav>
     </header>
 
-    <h1>Coming Soon...Gator Check-In!</h1>
-    <p>Statistics page</p>
+    <main class="flex flex-col grow mx-auto p-6 w-full h-0">
+        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Statistics</h1>
+
+        <section class="flex flex-row gap-8 justify-items-center mb-4 h-1/4">
+            <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Averages</h2>
+                <div class="flex">
+                    <table class="grow table-auto border border-default-medium border-gray-400 rounded-md">
+                        <thead>
+                            <tr>
+                                <th class="border border-grey-300">Category</th>
+                                <th class="border border-grey-300">Average</th>
+                                <th class="border border-grey-300">Today</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-grey-300">Stress</td>
+                                <td id="stress-average" class="border border-grey-300"></td>
+                                <td id="stress-today" class="border border-grey-300"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300">Mood</td>
+                                <td id="mood-average" class="border border-grey-300"></td>
+                                <td id="mood-today" class="border border-grey-300"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300">Energy</td>
+                                <td id="energy-average" class="border border-grey-300"></td>
+                                <td id="energy-today" class="border border-grey-300"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300">Sleep</td>
+                                <td id="sleep-average" class="border border-grey-300"></td>
+                                <td id="sleep-today" class="border border-grey-300"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Temporary</h2>
+            </div>
+        </section>
+
+        <section class="grow min-h-0 justify-items-center">
+            <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
+                <div id="line-chart" class="size-full"></div>
+                <!-- <div class="items-center border-light border-t justify-between mt-4 md:mt-6 pt-4 md:pt-6"></div> -->
+            </div>   
+        </section>
+    </main>
 </body>
 </html>
 
