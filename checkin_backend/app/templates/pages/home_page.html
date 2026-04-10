@@ -6,6 +6,7 @@
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+    <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
 
     <script>
         async function fetchCheckinStatus() {
@@ -164,6 +165,137 @@
             calendarListObj.render()
         });
     </script>
+
+    <script>
+        async function fetchTrendHistory() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendHistoryResponse = await fetch('/trends/weekly-history', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (trendHistoryResponse.status === 404) {
+                    console.error(trendHistoryResponse.message);
+                }
+
+                const trendHistoryData = await trendHistoryResponse.json();
+                return trendHistoryData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        const drawGraph = async() => {
+
+            const getBrandColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-1').trim();
+            };
+
+            const getBrandSecondaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-2').trim();
+            };
+
+            const getBrandTertiaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-3').trim();
+            };
+
+            const brandColor = getBrandColor();
+            const brandSecondaryColor = getBrandSecondaryColor();
+            const brandTertiaryColor = getBrandTertiaryColor();
+
+            const trendHistoryData = await fetchTrendHistory();
+            const options = {
+            chart: {
+                height: "100%",
+                maxWidth: "100%",
+                type: "line",
+                fontFamily: "Inter, sans-serif",
+                dropShadow: {
+                enabled: false,
+                },
+                toolbar: {
+                show: true,
+                },
+            },
+            tooltip: {
+                enabled: true,
+                x: {
+                show: false,
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            stroke: {
+                width: 6,
+                curve: 'smooth'
+            },
+            grid: {
+                show: true,
+                strokeDashArray: 4,
+                padding: {
+                left: 2,
+                right: 2,
+                top: -26
+                },
+            },
+            series: [
+                {
+                name: "Mood",
+                data: trendHistoryData.map(e => Object.values(e)[1]),
+                color: brandColor,
+                },
+                {
+                name: "Stress",
+                data: trendHistoryData.map(e => Object.values(e)[2]),
+                color: brandSecondaryColor,
+                },
+                {
+                name: "Energy",
+                data: trendHistoryData.map(e => Object.values(e)[3]),
+                color: brandTertiaryColor,
+                },
+            ],
+            legend: {
+                show: false
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            xaxis: {
+                categories: trendHistoryData.map(e => Object.values(e)[0]),
+                labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body'
+                }
+                },
+                axisBorder: {
+                show: false,
+                },
+                axisTicks: {
+                show: false,
+                },
+            },
+            yaxis: {
+                show: true,
+            },
+            }
+
+            const chart = new ApexCharts(document.getElementById("line-chart"), options);
+            chart.render();
+        }
+
+        document.addEventListener('DOMContentLoaded', drawGraph);
+    </script>
     
 </head>
 <body>
@@ -309,9 +441,13 @@
                 </div>
             </dialog>
 
-            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
+                <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
+                    <div id="line-chart" class="w-full h-120"></div>
+                </div>   
             </div>
+            
 
             </div>
         </section>
