@@ -8,7 +8,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
 
     <script>
-        window.onload = async function fetchCheckinStatus() {
+        async function fetchCheckinStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
                 const checkinResponse = await fetch('/checkins/today', {
@@ -25,10 +25,10 @@
                 }
 
                 const checkinJsonData = await checkinResponse.json();
-                document.getElementById('mood-data').innerText = checkinJsonData.mood;
-                document.getElementById('stress-data').innerText = checkinJsonData.stress;
-                document.getElementById('energy-data').innerText = checkinJsonData.energy;
-                document.getElementById('sleep-data').innerText = checkinJsonData.sleep_hours;
+                document.getElementById('mood-data').innerText = checkinJsonData.mood + "/5";
+                document.getElementById('stress-data').innerText = checkinJsonData.stress + "/5";
+                document.getElementById('energy-data').innerText = checkinJsonData.energy + "/5";
+                document.getElementById('sleep-data').innerText = checkinJsonData.sleep_hours + " hours";
                 document.getElementById('checkin-status-message').classList.add('hidden');
                 document.getElementById('checkin-results').classList.remove('hidden');
                 document.getElementById('checkin-button').classList.add('hidden');
@@ -37,7 +37,7 @@
             }
         }
 
-        window.onload = async function fetchJournalStatus() {
+        async function fetchJournalStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
                 const journalResponse = await fetch('/journal/today', {
@@ -62,6 +62,9 @@
                 document.getElementById('journal-status-message').innerText = "Error retrieving journal data."
             }
         }
+
+        document.addEventListener('DOMContentLoaded', fetchCheckinStatus);
+        document.addEventListener('DOMContentLoaded', fetchJournalStatus);
     </script>
 
     <script defer>
@@ -202,11 +205,37 @@
             <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
                 <p id="checkin-status-message">Updating daily check-in status...</p>
-                <div id="checkin-results" class="hidden mt-4 space-y-4">
-                    <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
+                <div id="checkin-results" class="hidden mt-4 h-4/5 space-y-4">
+                    <table class="size-full table-auto text-medium text-sm border border-separate rounded-sm">
+                        <thead>
+                            <tr>
+                                <th class="border rounded-sm p-1 text-center">Category</th>
+                                <th class="border rounded-sm p-1 text-center">Today's Check-In</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">Stress</td>
+                                <td id="stress-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Mood</td>
+                                <td id="mood-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Energy</td>
+                                <td id="energy-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Sleep</td>
+                                <td id="sleep-data" class="text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
                     <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
                     <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Sleep: <span id="sleep-data" class="font-semi-bold"></span> hours</p> 
+                    <p>Sleep: <span id="sleep-data" class="font-semi-bold"></span> hours</p>  -->
                 </div>
                 <a href="{{ url_for('main.checkin_page') }}" id="checkin-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to daily check-in</a>
             </div>
