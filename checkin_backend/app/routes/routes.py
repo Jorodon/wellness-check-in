@@ -59,7 +59,6 @@ def statistics_page():
 def resources_page():
     return render_template("pages/resources_page.html")
 
-
 # Database reset page, for development use
 @main.route('/dev/reset-db')
 def reset_db():

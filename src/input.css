@@ -3,8 +3,17 @@
 
 @import "flyonui/src/vendor/fullcalendar.css";
 @import "flyonui/src/vendor/flatpickr.css";
+@import "flyonui/src/vendor/apexcharts.css";
 
-.flatpickr-calendar {
-    z-index: 9999 !important;
+
+@theme {
+  /* This automatically creates .text-brand, .bg-brand, etc. */
+  --color-brand: #2F71BC;
+  --color-brand-subtle: #952462;
+  --color-graph-1: #2F71BC;
+  --color-graph-2: #952462;
+  --color-graph-3: #28a75d;
 }
-@import "tailwindcss";
+
+/* #1D232A Dark blue
+#171B20 Dark dark blue */
