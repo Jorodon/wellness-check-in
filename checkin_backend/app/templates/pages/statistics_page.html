@@ -6,10 +6,9 @@
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
-    <!-- <script src="/node_modules/apexcharts/dist/apexcharts.min.js"></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script> -->
 
     <script>
+        //Helper function to retrieve check-in history over past 7 days
         async function fetchTrendHistory() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -32,6 +31,7 @@
             }
         }
 
+        //Helper function to retrieve check-in average over past 7 days
         async function fetchTrendAverage() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -54,9 +54,8 @@
             }
         }
 
-        //function 
+        //Function to define graph
         const drawGraph = async() => {
-        //window.onload = async function drawGraph() {
 
             const getBrandColor = () => {
             const computedStyle = getComputedStyle(document.documentElement);
@@ -161,13 +160,13 @@
             chart.render();
         }
 
+        //Function to update the table
         const drawTable = async() => {
             const trendHistoryData = await fetchTrendHistory();
             const trendAverageData = await fetchTrendAverage();
             const today = new Date();
             let latestData = trendHistoryData.at(-1);
-            //let latestDate = new Date(latestData);
-            //if (latestDate.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+
             if (latestData.date === today.toISOString().split('T')[0]) {
                 document.getElementById('stress-today').textContent = latestData.stress;
                 document.getElementById('mood-today').textContent = latestData.mood;
@@ -184,6 +183,7 @@
             function round(data) {
                 return Number.parseFloat(data).toFixed(2);
             }
+
             document.getElementById('stress-average').textContent = round(trendAverageData.avg_stress);
             document.getElementById('mood-average').textContent = round(trendAverageData.avg_mood);
             document.getElementById('energy-average').textContent = round(trendAverageData.avg_energy);
@@ -192,7 +192,6 @@
 
         }
 
-
         document.addEventListener('DOMContentLoaded', drawGraph);
         document.addEventListener('DOMContentLoaded', drawTable);
     </script>
@@ -200,6 +199,7 @@
 
 <body class="flex flex-col h-lvh max-w-screen-2xl overflow-hidden">
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -231,9 +231,11 @@
     </header>
 
     <main class="flex flex-col grow mx-auto p-6 w-full h-0">
-        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Statistics</h1>
+        <h1 class="text-3xl font-bold text-center my-8">Statistics</h1>
 
         <section class="flex flex-row gap-8 justify-items-center mb-4 h-1/4">
+
+            <!-- Daily Check-In Average Table -->
             <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Averages</h2>
                 <div class="flex">
@@ -276,10 +278,10 @@
             </div>
         </section>
 
+        <!-- Check-In graph for past 7 days-->
         <section class="grow min-h-0 justify-items-center">
             <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
                 <div id="line-chart" class="size-full"></div>
-                <!-- <div class="items-center border-light border-t justify-between mt-4 md:mt-6 pt-4 md:pt-6"></div> -->
             </div>   
         </section>
     </main>
