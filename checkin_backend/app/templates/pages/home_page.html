@@ -9,6 +9,7 @@
     <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
 
     <script>
+        // Fetches today's check-in data from backend and updates check-in box
         async function fetchCheckinStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -20,11 +21,13 @@
                     },
                 });
 
+                // If no check-in has been done today, tells user to go check-in first
                 if (checkinResponse.status === 404) {
                     document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
                     return;
                 }
 
+                //Otherwise, adds a table with check-in results
                 const checkinJsonData = await checkinResponse.json();
                 document.getElementById('mood-data').innerText = checkinJsonData.mood + "/5";
                 document.getElementById('stress-data').innerText = checkinJsonData.stress + "/5";
@@ -38,6 +41,7 @@
             }
         }
 
+        //Fetches today's journal entry from backend and updates journal box
         async function fetchJournalStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -49,11 +53,13 @@
                     },
                 });
 
+                // If no journal entry has been made today, tells user to go make one
                 if (journalResponse.status === 404) {
                     document.getElementById('journal-status-message').innerText = "You haven't written a journal entry yet today. Please write an entry using the button below."
                     return;
                 }
 
+                //Otherwise, adds journal entry to journal box
                 const journalJsonData = await journalResponse.json();
                 document.getElementById('journal-data').textContent = journalJsonData.journal;
                 document.getElementById('journal-status-message').classList.add('hidden');
@@ -69,6 +75,9 @@
     </script>
 
     <script defer>
+        //Calendar scripts
+
+        //Function to fetch events/reminders from backend
         async function fetchEvents(info, successCallback, failureCallback) {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -91,7 +100,7 @@
             }
         }
         
-
+        //Helper function to add days to a date
         function addDays(date, days) {
             const result = new Date(date)
             result.setDate(result.getDate() + days)
@@ -103,12 +112,14 @@
         let selectedEvent = null
         let selectedDateInfo = null
 
+        //Main calendar function
         document.addEventListener('DOMContentLoaded', function () {
             const calendar = document.getElementById('calendar')
             const calendarList = document.getElementById('calendar-list')
             const eventForm = document.getElementById('submission-form')
             const deleteEvent = document.getElementById('delete-event')
 
+            //Defines the main calendar (one on left)
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
                 editable: true,
@@ -119,13 +130,12 @@
                 left: 'title prev,next',
                 right: 'dayGridMonth'
                 },
-                //events: events,
                 events: fetchEvents,
+                //Controls reminder detail modal when clicking on event
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'View Reminder'
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
-                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
                     document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
@@ -134,6 +144,7 @@
                 }
             })
 
+            //Defines second calendar (list to the right)
             const calendarListObj = new FullCalendar.Calendar(calendarList, {
                 displayEventTime: false,
                 initialView: 'listWeek',
@@ -146,15 +157,13 @@
                 right: 'prev,next'
                 },
                 events: fetchEvents,
+                //Controls reminder detail modal when clicking on event
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'View Reminder'
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
-                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
                     document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
-                    //let endTimeTemp = new Date(info.event.startStr);
                     document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
-                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
                     
                     document.getElementById('reminder-creation-modal').showModal()
@@ -167,6 +176,9 @@
     </script>
 
     <script>
+        //Statistics graph script
+
+        //Helper function to retrieve check-in history
         async function fetchTrendHistory() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -189,6 +201,7 @@
             }
         }
 
+        //Function to define graph 
         const drawGraph = async() => {
 
             const getBrandColor = () => {
@@ -300,6 +313,7 @@
 </head>
 <body>
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -331,9 +345,10 @@
     </header>
 
     <main class="mx-auto max-w-screen-2xl p-6">
-        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Gator Check-In!</h1>
+        <h1 class="text-3xl font-bold text-center my-8">Dashboard</h1>
 
         <section class="flex flex-row gap-8 justify-items-center mb-4">
+            <!-- Daily Check-In Box -->
             <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
                 <p id="checkin-status-message">Updating daily check-in status...</p>
@@ -364,14 +379,11 @@
                             </tr>
                         </tbody>
                     </table>
-                    <!-- <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Sleep: <span id="sleep-data" class="font-semi-bold"></span> hours</p>  -->
                 </div>
                 <a href="{{ url_for('main.checkin_page') }}" id="checkin-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to daily check-in</a>
             </div>
 
+            <!-- Journal Entry Box -->
             <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Journal</h2>
                 <p id="journal-status-message" class="text-xl font-semibold text-center my-8">Retrieving journal entry status...</p>
@@ -383,6 +395,7 @@
         </section>
 
         <section class="flex flex-col gap-8 justify-items-center">
+            <!-- Calendar Box -->
             <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Calendar</h2>
                 <div class="card flex flex-row gap-4 m-2">
@@ -394,6 +407,7 @@
                 </div>
             </div>
 
+            <!-- Calendar Modal for reviewing reminder details -->
             <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
                 <div class="modal-box max-w-3xl">
                     <form id="close-form" method="dialog">
@@ -406,16 +420,6 @@
                                 <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
                                 <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
                             </div>
-                            <!-- <div class="flex-1">
-                                <label for "reminder-interval" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
-                                <select id="reminder-interval" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
-                                    <option id="default-interval" disabled selected>Select date to be reminded</option>
-                                    <option>Always</option>
-                                    <option>1 week before</option>
-                                    <option>3 days before</option>
-                                    <option>1 day before</option>
-                                </select>
-                            </div> -->
                         </div>
                         <div class="flex flex-row gap-8 mt-4">
                             <div class="">
@@ -426,12 +430,6 @@
                                 <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date</label>
                                 <input type="text" id="flatpickr-end-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
                             </div>      
-                            <!-- <label class="inline-flex justify-right items-center cursor-pointer">
-                                <span class="select-none text-sm font-medium text-heading">Task</span>
-                                <input type="checkbox" id="type-selector" value="" class="sr-only peer">
-                                <div class="relative mx-3 w-9 h-5 bg-neutral-quaternary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-soft dark:peer-focus:ring-brand-soft rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
-                                <span class="select-none text-sm font-medium text-heading">Event</span>
-                            </label>                       -->
                         </div>
                         <div class="mt-4">
                             <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
@@ -441,19 +439,15 @@
                 </div>
             </dialog>
 
+            <!-- Statistics Box -->
             <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
                 <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
                     <div id="line-chart" class="w-full h-120"></div>
                 </div>   
             </div>
-            
-
-            </div>
         </section>
-
     </main>
-    
 </body>
 </html>
 

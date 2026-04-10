@@ -29,6 +29,7 @@
     </style>
 
     <script>
+        //Sends check-in data to backend when submit button is clicked
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -65,6 +66,7 @@
 <body>
 
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -95,13 +97,12 @@
         </nav>
     </header>
 
+    <!-- Check-In Form -->
     <main class="bg-[#f5f5f5] min-h-screen flex items-center justify-center font-sans text-black">
         <div class="border border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
             <h1 class="text-3xl text-center mb-10 font-medium">Daily Check-In</h1>
-
             <div class="bg-[#eeeeee] border border-gray-300 p-12 mx-auto w-[90%]">
                 <form class="space-y-12">
-                    
                     <div class="flex flex-col">
                         <div class="flex justify-between text-sm font-bold mb-1">
                             <span>Mood Levels</span>
@@ -144,7 +145,7 @@
         </div>
     </main>
     
-
+    <!-- Updates a slider when it is moved -->
     <script>
         function updateVal(id) {
             const slider = document.getElementById(id);
