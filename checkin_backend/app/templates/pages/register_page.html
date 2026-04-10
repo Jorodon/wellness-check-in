@@ -7,6 +7,7 @@
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
 
     <script>
+        //Sends registration data to backend when submit button is clicked, redirects to login page if successful
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -38,9 +39,9 @@
 
 </head>
 <body>
-    <h1>Registration Page</h1>
+    <h1 class="text-3xl font-bold text-center my-8">Register</h1>
+    <!-- Registration form -->
     <div>
-        <!--ADD ROUTE TO TASK CREATION LOGIC HERE-->
         <form class="max-w-3xl mx-auto" action="{{ url_for('auth.register') }}" method="POST">
             <div class="mt-4">
                 <label for "username" class="block mb-3 text-sm font-medium text-heading">Username</label>
