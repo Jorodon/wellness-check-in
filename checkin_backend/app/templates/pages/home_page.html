@@ -28,11 +28,38 @@
                 document.getElementById('mood-data').innerText = checkinJsonData.mood;
                 document.getElementById('stress-data').innerText = checkinJsonData.stress;
                 document.getElementById('energy-data').innerText = checkinJsonData.energy;
+                document.getElementById('sleep-data').innerText = checkinJsonData.sleep_hours;
                 document.getElementById('checkin-status-message').classList.add('hidden');
                 document.getElementById('checkin-results').classList.remove('hidden');
                 document.getElementById('checkin-button').classList.add('hidden');
             } catch (error){
                 document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
+            }
+        }
+
+        window.onload = async function fetchJournalStatus() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const journalResponse = await fetch('/journal/today', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                if (journalResponse.status === 404) {
+                    document.getElementById('journal-status-message').innerText = "You haven't written a journal entry yet today. Please write an entry using the button below."
+                    return;
+                }
+
+                const journalJsonData = await journalResponse.json();
+                document.getElementById('journal-data').textContent = journalJsonData.journal;
+                document.getElementById('journal-status-message').classList.add('hidden');
+                document.getElementById('journal-results').classList.remove('hidden');
+                document.getElementById('journal-button').classList.add('hidden');
+            } catch (error){
+                document.getElementById('journal-status-message').innerText = "Error retrieving journal data."
             }
         }
     </script>
@@ -172,28 +199,34 @@
         <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Gator Check-In!</h1>
 
         <section class="flex flex-row gap-8 justify-items-center mb-4">
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
                 <p id="checkin-status-message">Updating daily check-in status...</p>
                 <div id="checkin-results" class="hidden mt-4 space-y-4">
                     <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
                     <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
                     <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
+                    <p>Sleep: <span id="sleep-data" class="font-semi-bold"></span> hours</p> 
                 </div>
                 <a href="{{ url_for('main.checkin_page') }}" id="checkin-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to daily check-in</a>
             </div>
 
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Journal</h2>
+                <p id="journal-status-message" class="text-xl font-semibold text-center my-8">Retrieving journal entry status...</p>
+                <div id="journal-results" class="hidden mt-4 h-4/5 p-2 space-y-4 border border-default-medium text-sm rounded-sm">
+                    <p id="journal-data"></p>
+                </div>
+                <a href="{{ url_for('main.journal_page') }}" id="journal-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to today's journal</a>
             </div>
         </section>
 
         <section class="flex flex-col gap-8 justify-items-center">
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Calendar</h2>
                 <div class="card flex flex-row gap-4 m-2">
                     <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs overflow-visible"></div>
-                    <div class="flex-1 flex flex-col grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <div class="flex-1 flex flex-col grow p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                         <h2 class="font-semibold mb-4">Upcoming Events</h2>
                         <div id="calendar-list" class="flex-1 max-h-full object-contain px-1 overflow-auto"></div>
                     </div>
@@ -247,7 +280,7 @@
                 </div>
             </dialog>
 
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
             </div>
 
