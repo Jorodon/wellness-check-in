@@ -116,9 +116,10 @@
         <h1 class="text-3xl font-bold text-center my-8">Journal</h1>
 
         <!-- Journal entry Box -->
-        <section class="flex flex-col gap-8 justify-items-center mb-4 w-full">
+        <section class="flex flex-col gap-8 items-center mb-4 w-full">
             <form id="submission-form" class="w-full">
                 <textarea id="journal-entry" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-lg focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short journal entry about your day..." required></textarea>
+                <p class="font-normal text-sm text-gray-300 self-start">Entry limit: 2000 characters</p>
                 <button type="submit" id="submit-button" class="btn btn-md block mt-4 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
             </form>
         </section>
