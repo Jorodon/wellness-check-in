@@ -489,7 +489,7 @@
 
         <section class="flex flex-row gap-8 justify-items-center mb-4">
             <!-- Daily Check-In Box -->
-            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
                 <p id="checkin-status-message" class="text-xl font-semibold text-center my-8">Updating daily check-in status...</p>
                 <div id="checkin-results" class="hidden mt-4 h-4/5 space-y-4">
@@ -524,7 +524,7 @@
             </div>
 
             <!-- Journal Entry Box -->
-            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Journal</h2>
                 <p id="journal-status-message" class="text-xl font-semibold text-center my-8">Retrieving journal entry status...</p>
                 <div id="journal-results" class="hidden mt-4 h-4/5 p-2 space-y-4 border border-default-medium text-sm rounded-sm">
@@ -534,9 +534,16 @@
             </div>
         </section>
 
-        <section class="flex flex-col gap-8 justify-items-center">
+        <section class="flex flex-col gap-4 justify-items-center">
+
+            <!-- Instruction box -->
+            <div class="self-center w-full my-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Instructions</h2>
+                <p class="font-normal text-md mb-8 px-4">Click on a date box on the calendar to view check-in results and journal entry from that day, if they exist. Click on an existing reminder (either on the calendar or list of upcoming events) to view more details for that reminder. For more options, visit the Weekly Tasks page.</p>
+            </div>
+
             <!-- Calendar Box -->
-            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full min-h-62.5 mb-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Calendar</h2>
                 <div class="card flex flex-row gap-4 m-2">
                     <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs overflow-visible"></div>
@@ -580,9 +587,9 @@
             </dialog>
 
             <!-- Statistics Box -->
-            <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
-                <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
+                <div class="size-full bg-neutral-primary-soft border border-default rounded-md shadow-xs p-4 md:p-6">
                     <div id="line-chart" class="w-full h-120"></div>
                 </div>   
             </div>
