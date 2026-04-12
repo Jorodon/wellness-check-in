@@ -29,6 +29,7 @@
 
                 if (loginResponse.ok) {
                     localStorage.setItem('jwtToken', loginReturn['access-token']);
+                    localStorage.setItem('email', loginReturn['email']);
                     window.location.href = "/home";
                 } else {
                     alert(loginReturn.error || "An unknown error has occurred");
@@ -50,13 +51,12 @@
                 },
             });
 
-            // If no user is logged in, return to landing page
+            // If user is not logged in, do nothing
             if (authResponse.status === 401 || authResponse.status === 422) {
-                //window.location.href = "/home";
                 return;
             }
 
-            //Otherwise, display user email in dropdown in navbar
+            //Otherwise, reroute to dashboard
             window.location.href = "/home";
         });
     </script>
