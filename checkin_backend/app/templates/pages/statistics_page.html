@@ -84,11 +84,21 @@
                 maxWidth: "100%",
                 type: "line",
                 fontFamily: "Inter, sans-serif",
+                foreColor: '#ffffff',
                 dropShadow: {
                 enabled: false,
                 },
                 toolbar: {
                 show: true,
+                },
+            },
+            title: {
+                text: 'Daily Check-In Scores over Past 7 Days',
+                align: 'center',
+                margin: 5,
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
                 },
             },
             tooltip: {
@@ -108,9 +118,9 @@
                 show: true,
                 strokeDashArray: 4,
                 padding: {
-                left: 2,
-                right: 2,
-                top: -26
+                left: 10,
+                right: 10,
+                top: 0
                 },
             },
             series: [
@@ -131,7 +141,7 @@
                 },
             ],
             legend: {
-                show: false
+                show: true
             },
             stroke: {
                 curve: 'smooth'
@@ -154,6 +164,19 @@
             },
             yaxis: {
                 show: true,
+                labels: {
+                    //offsetX: -10,
+                    style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body',
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                },
+                tickAmount: 4,
+                min: 1,
+                max: 5,
             },
             }
 
@@ -310,8 +333,10 @@
                 </div>
             </div>
 
-            <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Temporary</h2>
+            <div class="flex flex-col w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Notice Any Trends?</h2>
+                <p id="user-email-display" class="font-normal text-md mb-8 px-4">If you've noticed that your scores have been trending downwards recently, or if you just feel a little off, we recommend you visit the Resources page for links to sources that could help. Click the button below.</p>
+                <a href="{{ url_for('main.resources_page') }}" class="btn btn-md flex w-fit px-4 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs self-center">Go to Resource page</a>
             </div>
         </section>
 

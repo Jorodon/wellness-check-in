@@ -231,11 +231,21 @@
                 maxWidth: "100%",
                 type: "line",
                 fontFamily: "Inter, sans-serif",
+                foreColor: '#ffffff',
                 dropShadow: {
                 enabled: false,
                 },
                 toolbar: {
                 show: true,
+                },
+            },
+            title: {
+                text: 'Daily Check-In Scores over Past 7 Days',
+                align: 'center',
+                margin: 5,
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
                 },
             },
             tooltip: {
@@ -255,9 +265,9 @@
                 show: true,
                 strokeDashArray: 4,
                 padding: {
-                left: 2,
-                right: 2,
-                top: -26
+                left: 10,
+                right: 10,
+                top: 0
                 },
             },
             series: [
@@ -278,7 +288,7 @@
                 },
             ],
             legend: {
-                show: false
+                show: true
             },
             stroke: {
                 curve: 'smooth'
@@ -301,6 +311,19 @@
             },
             yaxis: {
                 show: true,
+                labels: {
+                    //offsetX: -10,
+                    style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body',
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                },
+                tickAmount: 4,
+                min: 1,
+                max: 5,
             },
             }
 
