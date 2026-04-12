@@ -225,7 +225,7 @@ def update_event(event_id):
 # DELETE - event(s)
 @calendar_bp.route("/event/<int:event_id>", methods=["DELETE"])
 @jwt_required()
-def delete_evetn(event_id):
+def delete_event(event_id):
     user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
