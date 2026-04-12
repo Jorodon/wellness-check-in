@@ -65,18 +65,3 @@ def login():
     access_token = create_access_token(identity=str(user.id))
 
     return jsonify({"access_token": access_token}), 200
-
-
-@auth_bp.route("/get_email", methods=["GET"])
-def get_email():
-    email = request.args.get("email")  # ✅ correct for GET
-
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    return jsonify({"email": user.email}), 200
