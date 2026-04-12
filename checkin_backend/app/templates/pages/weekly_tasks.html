@@ -8,30 +8,10 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let calendarEl = document.getElementById('calendar');
-            let eventDay = new Date();
-            let calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                buttonText: {
-                    today: 'Today'
-                },
-                events: [
-                    {
-                        title: 'Learn JavaScript',
-                        start: eventDay.toISOString().split('T')[0],
-                        classNames: ['fc-event-primary']
-                    }
-                ]
-            });
-            calendar.render()
-        });
-    </script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     <script defer>
-        async function fetchEvents(info) {
+        async function fetchEvents(info, successCallback, failureCallback) {
             try {
                 const token = localStorage.getItem('jwtToken');
                 const eventHistoryResponse = await fetch('/calendar/events', {
@@ -43,62 +23,24 @@
                 });
 
                 if (eventHistoryResponse.status === 404) {
-                    document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-                    return;
+                    console.error("No events have been added yet.");
                 }
 
                 const events = await eventHistoryResponse.json();
-                return events;
+                successCallback(events)
             } catch (error){
-                document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
+                console.error("No events have been added yet.");
             }
         }
+        
 
         function addDays(date, days) {
             const result = new Date(date)
             result.setDate(result.getDate() + days)
             return result
         }
-        function formatDate(date) {
-            return date.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-            })
-        }
 
         const today = new Date()
-        
-        let events = [
-            {
-            title: 'Past Event',
-            start: addDays(today, -2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'All Day Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'Long Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            end: addDays(today, 5).toISOString().split('T')[0],
-            classNames: ['fc-event-primary']
-            },
-            {
-            groupId: '999',
-            title: 'Coding session',
-            start: addDays(today, 1).toISOString().split('T')[0] + 'T16:00:00',
-            classNames: ['fc-event-secondary']
-            },
-            {
-            groupId: '999',
-            title: 'Coding session',
-            start: addDays(today, 8).toISOString().split('T')[0] + 'T16:00:00',
-            classNames: ['fc-event-secondary']
-            }
-        ]
 
         let selectedEvent = null
         let selectedDateInfo = null
@@ -106,6 +48,8 @@
         document.addEventListener('DOMContentLoaded', function () {
             const calendar = document.getElementById('calendar')
             const calendarList = document.getElementById('calendar-list')
+            const eventForm = document.getElementById('submission-form')
+            const deleteEvent = document.getElementById('delete-event')
 
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
@@ -115,102 +59,41 @@
                 selectable: true,
                 headerToolbar: {
                 left: 'title prev,next',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                right: 'dayGridMonth'
                 },
                 //events: events,
-                events: async function(info, successCallback, failureCallback) {
-                    try {
-                        // if (calendar.view.type === 'dayGridMonth') {
-                        //     events = await fetchEventsToday(info)
-                        // } else if (calendar.view.type === 'timeGridWeek') {
-                        //     events = await fetchEventsWeek(info)
-                        // } else {
-                        //     events = await fetchEvents(info)
-                        // }
-                        events = await fetchEvents(info)
-                        successCallback(events)
-                    } catch (error) {
-                        failureCallback(error)
-                    }
-                },
-                select: function (info) {
+                events: fetchEvents,
+                select: async function (info) {
                     selectedEvent = null
-                    selectedDateInfo = info
                     document.getElementById('reminder-header').textContent = 'Create a New Reminder'
-                    document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = ''
-                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
-                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = today.toISOString().split('T')[0]
+                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'Select date to be reminded'
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.start.toISOString().split('T')[0]
+                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.end.toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.end, -1).toISOString().split('T')[0]
                     document.querySelector('#reminder-creation-modal #reminder-description').value = ''
-
+                    document.getElementById('delete-button').classList.add('hidden')
                     document.getElementById('submit-button').textContent = 'Create Reminder'
+
+                    document.getElementById('reminder-creation-modal').showModal()
                 },
                 eventClick: function (info) {
                     selectedEvent = info.event
                     document.getElementById('reminder-header').textContent = 'Edit Reminder'
-                    document.getElementById('reminder-creation-modal').showModal()
                     document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
-                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
-
+                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
+                    document.getElementById('delete-button').classList.remove('hidden')
                     document.getElementById('submit-button').textContent = 'Save Changes'
-                },
-                newEventSubmit: function (info) {
-                    document.querySelector('form').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        /*
-                        title: string
-                        groupId: string
-                        start: ISOString
-                        end: ISOString
-                        classNames: array of strings
-                        description: string
-                        */
 
-                        /*
-                        title = data.get("title")
-                        description = data.get("description")
-                        start_time_str = data.get("start_time")
-                        end_time_str = data.get("end_time")
-                        item_type = data.get("item_type")
-                        class_names = data.get("class_names")
-                        is_recurring = data.get("is_recurring")
-                        recurrence = data.get("recurrence")
-                        repeat_count = data.get("repeat_count", 1)
-
-                        */
-                        const reminderData = {
-                            
-                            id: info.event.id,
-                            groupId: info.event.groupId,
-                            title: info.event.title,
-                            start: info.event.start.toISOString().split('T'),
-                            end: info.event.start.toISOString().split('T'),
-                            classNames: info.event.classNames,
-                            description: document.getElementById('reminder-description').value
-                        }
-
-                        const reminderResponse = await fetch("{{ url_for('calendar.create_event') }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(reminderData)
-                        });
-
-                        const reminderReturn = await reminderResponse.json();
-                        
-                        if (reminderResponse.ok) {
-                            //window.location.href = "/login";
-                        } else {
-                            alert(reminderReturn.error || "An unknown error has occurred");
-                        }
-                    })
+                    document.getElementById('reminder-creation-modal').showModal()
                 }
             })
 
             const calendarListObj = new FullCalendar.Calendar(calendarList, {
+                displayEventTime: false,
                 initialView: 'listWeek',
                 editable: true,
                 direction: 'ltr',
@@ -220,81 +103,127 @@
                 left: 'title',
                 right: 'prev,next'
                 },
-                events: events,
+                events: fetchEvents,
                 eventClick: function (info) {
-                    selectedEvent = info.event
-                    document.getElementById('reminder-header').textContent = 'Edit Reminder'
-                    document.getElementById('reminder-creation-modal').showModal()
-                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
-                    document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #flatpickr-date').value = info.event.startStr
-                    document.querySelector('#reminder-creation-modal #reminder-description').value = 'Pre-existing task description.'
-
-                    document.getElementById('submit-button').textContent = 'Save Changes'
+                    selectedEvent = info.event;
+                    document.getElementById('reminder-header').textContent = 'Edit Reminder';
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title;
+                    //document.querySelector('#reminder-creation-modal #reminder-interval #default-interval').textContent = 'placeholder'
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0];
+                    //let endTimeTemp = new Date(info.event.startStr);
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0];
+                    //document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = info.event.endStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description;
+                    document.getElementById('delete-button').classList.remove('hidden');
+                    document.getElementById('submit-button').textContent = 'Save Changes';
+                    
+                    document.getElementById('reminder-creation-modal').showModal();
                 }
             })
             
             calendarObj.render()
             calendarListObj.render()
+
+
+            eventForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const startT = new Date(document.getElementById('flatpickr-start-date').value);
+                const endT = new Date(document.getElementById('flatpickr-end-date').value);
+                let eventType;
+                //if (addDays(document.getElementById('flatpickr-start-date').value, 1).toISOString() === endT.toISOString()) {
+                if (startT.toISOString() === endT.toISOString()) {
+                    eventType = ['fc-event-info'];
+                }
+                else {
+                    eventType = ['fc-event-primary'];
+                }
+                const reminderData = {
+                    title: document.getElementById('reminder-name').value,
+                    description: document.getElementById('reminder-description').value,
+                    start_time: startT.toISOString(),
+                    end_time: addDays(document.getElementById('flatpickr-end-date').value, 1).toISOString(),
+                    item_type: 'event',
+                    class_names: eventType,
+                    is_recurring: false,
+                    recurrence: null,
+                    repeat_count: 1
+                };
+
+                const editStatus = selectedEvent !== null;
+                let eventUrl = '/calendar/create_events';
+                let method = 'POST';
+                if (editStatus) {
+                    reminderData.id = selectedEvent.id;
+                    eventUrl = 'calendar/events/' + selectedEvent.id;
+                    method = 'PUT';
+                }
+
+                const token = localStorage.getItem('jwtToken');
+                const reminderResponse = await fetch(eventUrl, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(reminderData)
+                });
+
+                const reminderReturn = await reminderResponse.text();
+                if (!reminderResponse.ok) {
+                    console.error(reminderReturn.error);
+                }
+                else {
+                    document.getElementById('reminder-creation-modal').close();
+                    calendarObj.refetchEvents();
+                    calendarListObj.refetchEvents();
+                }
+            })
+
+            deleteEvent.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                let eventUrl = 'calendar/event/' + selectedEvent.id;
+                const token = localStorage.getItem('jwtToken');
+                const reminderResponse = await fetch(eventUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    //body: JSON.stringify(reminderData)
+                });
+
+                const reminderReturn = await reminderResponse.text();
+                if (!reminderResponse.ok) {
+                    console.error(reminderReturn.error);
+                }
+                else {
+                    document.getElementById('reminder-creation-modal').close();
+                    calendarObj.refetchEvents();
+                    calendarListObj.refetchEvents();
+                }
+            })
         });
     </script>
-
-{#
-    <script>
-        document.querySelector('form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const today = new Date()
-
-            /*
-            title: string
-            groupId: string
-            start: ISOString
-            end: ISOString
-            classNames: array of strings
-            description: string
-            */
-            const reminderData = {
-                title: document.getElementById('reminder-name').value,
-                start: document.getElementById('flatpickr-date').toISOString().split('T')[0],
-                //end: document.getElementById('flatpickr-date').toISOString().split('T')[0],
-
-                classNames: document.getElement,
-                description: document.getElementById('reminder-description').value
-            }
-
-            const reminderResponse = await fetch('/calendar/create_events', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(reminderData)
-            });
-
-            const reminderReturn = await reminderResponse.json();
-            
-            if (reminderResponse.ok) {
-                //window.location.href = "/login";
-            } else {
-                alert(reminderReturn.error || "An unknown error has occurred");
-            }
-        });
-    </script>
-#}
 
     <script>
         window.addEventListener('load', function () {
             // Basic
-            flatpickr('#flatpickr-date', {
+            flatpickr('#flatpickr-start-date', {
                 monthSelectorType: 'static',
                 static: true, 
                 appendTo: document.querySelector('#reminder-creation-modal .modal-box')
             })
-        })
+            flatpickr('#flatpickr-end-date', {
+                monthSelectorType: 'static',
+                static: true, 
+                appendTo: document.querySelector('#reminder-creation-modal .modal-box')
+            })
+        });
     </script>
 
 </head>
-<body>
+<body class="h-screen">
     <header>
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
@@ -326,32 +255,31 @@
         </nav>
     </header>
 
-    <main>
+    <main class="mx-auto max-w-screen-2xl h-screen p-6">
         <section>
-            <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
-                <div id='calendar' class="flex-1"></div>
-                    <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                        <div class="flex flex-col">
-                            <h2 class="font-semibold mb-4">Upcoming Events</h2>
-                            <div id="calendar-list" class="flex-1 menu px-1"></div>
-                        </div>
-                    </div>
+            <div class="card flex flex-row gap-4 m-2">
+                <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs overflow-visible"></div>
+                <div class="flex-1 flex flex-col grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="font-semibold mb-4">Upcoming Events</h2>
+                    <div id="calendar-list" class="flex-1 max-h-full object-contain px-1 overflow-auto"></div>
                 </div>
             </div>
 
             <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
                 <div class="modal-box max-w-3xl">
+                    <form id="close-form" method="dialog">
+                        <button id="close-button" type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
                     <!--ADD ROUTE FOR -->
-                    <form class="max-w-3xl mx-auto">
+                    <form id="submission-form" class="max-w-3xl mx-auto">
                         <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         <div>
                             <div class="flex flex-row gap-4 my-4">
                                 <div class="flex-1">
                                     <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
                                     <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
                                 </div>
-                                <div class="flex-1">
+                                <!-- <div class="flex-1">
                                     <label for "reminder-interval" class="block mb-3 text-sm font-medium text-heading">When would you like to be reminded? </label>
                                     <select id="reminder-interval" class="select bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block max-w-sm px-3 py-2.5 shadow-xs appearance-none"" aria-label="select">
                                         <option id="default-interval" disabled selected>Select date to be reminded</option>
@@ -360,20 +288,35 @@
                                         <option>3 days before</option>
                                         <option>1 day before</option>
                                     </select>
-                                </div>
+                                </div> -->
                             </div>
-                            <div class="mt-4">
-                                <label for "flatpickr-date" class="block mb-3 text-sm font-medium text-heading">Date</label>
-                                <input type="text" id="flatpickr-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            <div class="flex flex-row gap-8 mt-4">
+                                <div class="">
+                                    <label for "flatpickr-start-date" class="block mb-3 text-sm font-medium text-heading">Start Date</label>
+                                    <input type="text" id="flatpickr-start-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                                </div>
+                                <div class="justify-left">
+                                    <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date</label>
+                                    <input type="text" id="flatpickr-end-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                                </div>      
+                                <!-- <label class="inline-flex justify-right items-center cursor-pointer">
+                                    <span class="select-none text-sm font-medium text-heading">Task</span>
+                                    <input type="checkbox" id="type-selector" value="" class="sr-only peer">
+                                    <div class="relative mx-3 w-9 h-5 bg-neutral-quaternary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-soft dark:peer-focus:ring-brand-soft rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-buffer after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
+                                    <span class="select-none text-sm font-medium text-heading">Event</span>
+                                </label>                       -->
                             </div>
                             <div class="mt-4">
                                 <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
                                 <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
                             </div>
-                            <div class="flex items-center justify-center mt-4">
+                            <div class="justify-center mt-4 gap-8">
                                 <button type="submit" id="submit-button" class="btn btn-md block mb-3 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
                             </div>
                         </div>
+                    </form>
+                    <form id="delete-event">
+                        <button type="submit" id="delete-button" class="btn btn-md block mb-3 hidden bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-base focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Delete Reminder</button>
                     </form>
                 </div>
             </dialog>
