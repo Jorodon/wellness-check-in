@@ -29,5 +29,3 @@ def create_app():
     app.register_blueprint(journal_bp, url_prefix="/journal")
 
     return app
-
-
