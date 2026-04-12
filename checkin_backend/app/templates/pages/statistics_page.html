@@ -36,9 +36,10 @@
         async function fetchTrendAverage() {
             try {
                 const token = localStorage.getItem('jwtToken');
-                const trendHistoryResponse = await fetch('/trends/weekly-history', {
+                const trendAverageResponse = await fetch('/trends/weekly-average', {
                     method: 'GET',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                 });
