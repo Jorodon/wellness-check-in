@@ -36,10 +36,9 @@
         async function fetchTrendAverage() {
             try {
                 const token = localStorage.getItem('jwtToken');
-                const trendAverageResponse = await fetch('/trends/weekly-average', {
+                const trendHistoryResponse = await fetch('/trends/weekly-history', {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                 });
@@ -167,7 +166,6 @@
             const trendAverageData = await fetchTrendAverage();
             const today = new Date();
             let latestData = trendHistoryData.at(-1);
-
             if (latestData.date === today.toISOString().split('T')[0]) {
                 document.getElementById('stress-today').textContent = latestData.stress;
                 document.getElementById('mood-today').textContent = latestData.mood;
@@ -184,7 +182,6 @@
             function round(data) {
                 return Number.parseFloat(data).toFixed(2);
             }
-
             document.getElementById('stress-average').textContent = round(trendAverageData.avg_stress);
             document.getElementById('mood-average').textContent = round(trendAverageData.avg_mood);
             document.getElementById('energy-average').textContent = round(trendAverageData.avg_energy);
