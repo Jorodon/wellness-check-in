@@ -330,15 +330,16 @@
                 return;
             }
 
-            //Otherwise, display user email in dropdown in navbar
+            //Otherwise, display user email in navbar
             const authJsonData = await authResponse.json();
-            document.getElementById('user-email-button').innerText = "Hello, " + authJsonData.email;
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
 
         });
         
-        //Removes access token from storage and returns to landing page when signout button is clicked
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
         async function signoutClick() {
             localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
             window.location.href = "/";
         }
 
@@ -364,6 +365,7 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
                     <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
@@ -371,9 +373,6 @@
                     </button>
                     <div id="account-dropdown" class="hidden">
                         <ul class="menu menu-vertical px-1">
-                            <li>
-                                <button type="button" id="user-email-button" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium font-medium rounded-md text-sm text-red-300 mx-auto shadow-xs">Hello user</button>
-                            </li>
                             <li>
                                 <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
                             </li>
