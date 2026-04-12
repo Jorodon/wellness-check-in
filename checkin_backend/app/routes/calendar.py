@@ -56,7 +56,7 @@ def get_next_datetime(dt, recurrence):
     elif recurrence == "weekly":
         return dt + timedelta(weeks=1)
     elif recurrence == "monthly":
-        return dt +timedelta(days=30)
+        return dt + timedelta(days=30)
     else:
         return dt
 
@@ -90,7 +90,7 @@ def create_event():
     try:
         start_time = parse_datetime(start_time_str, "start_time")
         end_time = parse_datetime(end_time_str, "end_time")
-        clas_names = validate_class_names(class_names)
+        class_names = validate_class_names(class_names)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -102,7 +102,7 @@ def create_event():
 
     if is_recurring:
         if recurrence not in ["daily", "weekly", "monthly"]:
-            return jsonify ({"error": "recurrence must be 'daily', 'weekly', 'monthly'"}), 400
+            return jsonify({"error": "recurrence must be 'daily', 'weekly', 'monthly'"}), 400
     if not isinstance(repeat_count, int) or repeat_count < 1:
         return jsonify({"error": "repeat count must be positive"}), 400
 
@@ -119,16 +119,16 @@ def create_event():
 
         for _ in range(repeat_count):
             event = Event(user_id=user_id,
-                    title=title,
-                      description=description,
-                      start_time=current_start,
-                      end_time=current_end,
-                      item_type=item_type,
-                      class_names=class_names,
-                      group_id=group_id,
-                      is_recurring=True,
-                      recurrence=recurrence
-                      )
+                          title=title,
+                          description=description,
+                          start_time=current_start,
+                          end_time=current_end,
+                          item_type=item_type,
+                          class_names=class_names,
+                          group_id=group_id,
+                          is_recurring=True,
+                          recurrence=recurrence
+                          )
 
             db.session.add(event)
             created_events.append(event)
@@ -189,7 +189,7 @@ def update_event(event_id):
         return jsonify({"error": "Not a recurring event"}), 400
 
     if update_scope == "group":
-        events = Event.query.filter_by(user_id= user_id, group_id=event.group_id).all()
+        events = Event.query.filter_by(user_id=user_id, group_id=event.group_id).all()
     else:
         events = [event]
 
@@ -248,4 +248,3 @@ def delete_event(event_id):
     db.session.commit()
 
     return jsonify({"message": "Event deleted"}), 200
-
