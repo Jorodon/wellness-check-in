@@ -53,9 +53,12 @@
                 });
 
                 const loginReturn = await loginResponse.json();
-
-                if (loginResponse.ok) {
+                // If check-in successful, return to dashboard
+                if (loginResponse.ok || loginResponse.status === 409) {
                     window.location.href = "/home";
+                // If there is an error, display error message
+                } else if (loginResponse.status === 400) {
+                    document.getElementById('error-message').textContent = "Error: " + loginReturn.error;
                 } else {
                     alert(loginReturn.error || "An unknown error has occurred");
                 }
@@ -79,7 +82,9 @@
             // If no user is logged in, return to landing page
             if (authResponse.status === 401 || authResponse.status === 422) {
                 window.location.href = "/";
-                return;
+            // If check-in has already been done today, return to dashboard
+            } else if (authResponse.ok) {
+                window.location.href = "/home";
             }
 
             //Otherwise, display user email in navbar
@@ -180,6 +185,10 @@
                         </button>
                     </div>
                 </form>
+            </div>
+            <!-- Error message display -->
+            <div>
+                <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
             </div>
         </div>
     </main>
