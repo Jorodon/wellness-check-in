@@ -6,10 +6,10 @@
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
-    <!-- <script src="/node_modules/apexcharts/dist/apexcharts.min.js"></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     <script>
+        //Helper function to retrieve check-in history over past 7 days
         async function fetchTrendHistory() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -32,6 +32,7 @@
             }
         }
 
+        //Helper function to retrieve check-in average over past 7 days
         async function fetchTrendAverage() {
             try {
                 const token = localStorage.getItem('jwtToken');
@@ -54,9 +55,8 @@
             }
         }
 
-        //function 
+        //Function to define graph
         const drawGraph = async() => {
-        //window.onload = async function drawGraph() {
 
             const getBrandColor = () => {
             const computedStyle = getComputedStyle(document.documentElement);
@@ -84,11 +84,21 @@
                 maxWidth: "100%",
                 type: "line",
                 fontFamily: "Inter, sans-serif",
+                foreColor: '#ffffff',
                 dropShadow: {
                 enabled: false,
                 },
                 toolbar: {
                 show: true,
+                },
+            },
+            title: {
+                text: 'Daily Check-In Scores over Past 7 Days',
+                align: 'center',
+                margin: 5,
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
                 },
             },
             tooltip: {
@@ -108,9 +118,9 @@
                 show: true,
                 strokeDashArray: 4,
                 padding: {
-                left: 2,
-                right: 2,
-                top: -26
+                left: 10,
+                right: 10,
+                top: 0
                 },
             },
             series: [
@@ -131,7 +141,7 @@
                 },
             ],
             legend: {
-                show: false
+                show: true
             },
             stroke: {
                 curve: 'smooth'
@@ -154,6 +164,19 @@
             },
             yaxis: {
                 show: true,
+                labels: {
+                    //offsetX: -10,
+                    style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body',
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                },
+                tickAmount: 4,
+                min: 1,
+                max: 5,
             },
             }
 
@@ -161,13 +184,12 @@
             chart.render();
         }
 
+        //Function to update the table
         const drawTable = async() => {
             const trendHistoryData = await fetchTrendHistory();
             const trendAverageData = await fetchTrendAverage();
             const today = new Date();
             let latestData = trendHistoryData.at(-1);
-            //let latestDate = new Date(latestData);
-            //if (latestDate.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
             if (latestData.date === today.toISOString().split('T')[0]) {
                 document.getElementById('stress-today').textContent = latestData.stress;
                 document.getElementById('mood-today').textContent = latestData.mood;
@@ -192,14 +214,48 @@
 
         }
 
-
         document.addEventListener('DOMContentLoaded', drawGraph);
         document.addEventListener('DOMContentLoaded', drawTable);
     </script>
+
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If no user is logged in, return to landing page
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                window.location.href = "/";
+                return;
+            }
+
+            //Otherwise, display user email in navbar
+            const authJsonData = await authResponse.json();
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
+
+        });
+        
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
+        async function signoutClick() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
+            window.location.href = "/";
+        }
+
+    </script>
 </head>
 
-<body class="flex flex-col h-lvh max-w-screen-2xl overflow-hidden">
+<body class="flex flex-col h-lvh">
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -216,24 +272,30 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
-                    <button class="btn btn-ghost btn-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
-                    </button>
-                    <button class="btn btn-ghost btn-circle">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
+                    <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
                         </div>
                     </button>
+                    <div id="account-dropdown" class="hidden">
+                        <ul class="menu menu-vertical px-1">
+                            <li>
+                                <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
     <main class="flex flex-col grow mx-auto p-6 w-full h-0">
-        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Statistics</h1>
+        <h1 class="text-3xl font-bold text-center my-8">Statistics</h1>
 
         <section class="flex flex-row gap-8 justify-items-center mb-4 h-1/4">
+
+            <!-- Daily Check-In Average Table -->
             <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Averages</h2>
                 <div class="flex">
@@ -271,15 +333,17 @@
                 </div>
             </div>
 
-            <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Temporary</h2>
+            <div class="flex flex-col w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Notice Any Trends?</h2>
+                <p id="user-email-display" class="font-normal text-md mb-8 px-4">If you've noticed that your scores have been trending downwards recently, or if you just feel a little off, we recommend you visit the Resources page for links to sources that could help. Click the button below.</p>
+                <a href="{{ url_for('main.resources_page') }}" class="btn btn-md flex w-fit px-4 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs self-center">Go to Resource page</a>
             </div>
         </section>
 
+        <!-- Check-In graph for past 7 days-->
         <section class="grow min-h-0 justify-items-center">
             <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
                 <div id="line-chart" class="size-full"></div>
-                <!-- <div class="items-center border-light border-t justify-between mt-4 md:mt-6 pt-4 md:pt-6"></div> -->
             </div>   
         </section>
     </main>

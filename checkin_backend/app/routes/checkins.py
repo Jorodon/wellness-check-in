@@ -30,16 +30,16 @@ def create_checkin():
         try:
             sleep_hours = float(sleep_hours)
         except (TypeError, ValueError):
-            return jsonify({"error": "sleep_hours must be a number"}), 400
+            return jsonify({"error": "Sleep hours must be a number"}), 400
 
         if sleep_hours < 0 or sleep_hours > 24:
-            return jsonify({"error": "sleep_hours must be between 0 and 24"}), 400
+            return jsonify({"error": "Sleep hours must be between 0 and 24"}), 400
 
     today = date.today()
 
     existing = CheckIn.query.filter_by(user_id=user_id, date=today).first()
     if existing:
-        return jsonify({"error": "Check-in already exists for today"}), 400
+        return jsonify({"error": "Check-in already exists for today"}), 409
 
     checkin = CheckIn(user_id=user_id,
                       date=today,

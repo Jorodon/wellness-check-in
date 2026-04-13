@@ -5,9 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+    <script>
+        //Sends journal data to backend when submit button is clicked
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const token = localStorage.getItem('jwtToken');
+
+                const journalData = {
+                    journal: document.getElementById('journal-entry').value
+                };
+
+                const journalResponse = await fetch("{{ url_for('journal.journal_entry') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(journalData)
+                });
+
+                const journalReturn = await journalResponse.json();
+
+                if (journalResponse.ok) {
+                    window.location.href = "/home";
+                } else if (journalResponse.status === 400) {
+                    document.getElementById('error-message').textContent = "Error: " + journalReturn.error;
+                } else {
+                    alert(journalReturn.error || "An unknown error has occurred");
+                }
+            });
+        });
+    </script>
+
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If no user is logged in, return to landing page
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                window.location.href = "/";
+                return;
+            }
+
+            //Otherwise, display user email in navbar
+            const authJsonData = await authResponse.json();
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
+
+        });
+        
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
+        async function signoutClick() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
+            window.location.href = "/";
+        }
+
+    </script>
 </head>
-<body>
+<body class="flex flex-col h-lvh overflow-hidden">
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -24,22 +94,41 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
-                    <button class="btn btn-ghost btn-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
-                    </button>
-                    <button class="btn btn-ghost btn-circle">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
+                    <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
                         </div>
                     </button>
+                    <div id="account-dropdown" class="hidden">
+                        <ul class="menu menu-vertical px-1">
+                            <li>
+                                <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <h1>Coming Soon...Gator Check-In!</h1>
-    <p>Journal page</p>
+    <main class="flex flex-col grow mx-auto p-6 h-0 w-full max-w-4xl">
+        <h1 class="text-3xl font-bold text-center my-8">Journal</h1>
+
+        <!-- Journal entry Box -->
+        <section class="flex flex-col gap-8 items-center mb-4 w-full">
+            <form id="submission-form" class="w-full">
+                <textarea id="journal-entry" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-lg focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short journal entry about your day..." required></textarea>
+                <p class="font-normal text-sm text-gray-300 self-start">Entry limit: 2000 characters</p>
+                <button type="submit" id="submit-button" class="btn btn-md block mt-4 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Submit</button>
+            </form>
+        </section>
+        
+        <!-- Error message display -->
+        <div>
+            <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+        </div>
+    </main>
 </body>
 </html>
 
