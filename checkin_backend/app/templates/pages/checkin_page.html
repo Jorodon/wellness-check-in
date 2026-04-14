@@ -192,7 +192,7 @@
 
                 <div class="flex items-center gap-3">
                     <label class="text-sm font-bold whitespace-nowrap" for="sleep">Sleep Hours</label>
-                    <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="0"
+                    <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="NULL"
                         class="w-16 border border-black bg-white px-2 py-1 rounded text-sm outline-none focus:ring-2 focus:ring-black/20">
                 </div>
 
@@ -202,6 +202,11 @@
                         </button>
                     </div>
                 </form>
+            </div>
+            <!-- Instructions -->
+            <div class="border mt-4 border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
+                <p class="font-normal text-md text-center mb-4 px-4">Please select a valid value for each field. Sleep hours can be any number between 0 and 24, but is optional and defaults to NULL if no value is entered.</p>
+                <p class="text-red-300 text-md font-semibold text-center">Note that once you have submitted your daily check-in, you cannot change your answers.</p>
             </div>
             <!-- Error message display -->
             <div>
