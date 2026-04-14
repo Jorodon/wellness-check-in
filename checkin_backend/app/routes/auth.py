@@ -64,5 +64,4 @@ def login():
     # create JWT token
     access_token = create_access_token(identity=str(user.id))
 
-
     return jsonify({"access-token": access_token, "email": user.email}), 200
