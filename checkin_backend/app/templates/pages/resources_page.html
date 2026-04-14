@@ -43,6 +43,7 @@
 </head>
 <body>
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -77,8 +78,107 @@
         </nav>
     </header>
 
-    <h1>Coming Soon...Gator Check-In!</h1>
-    <p>Resources page</p>
+    <main class="flex flex-col gap-8 mx-auto max-w-screen-2xl h-screen p-6">
+        <h1 class="text-3xl font-bold text-center mt-4">Resources</h1>
+        <!-- Prelude message -->
+        <div class="self-center p-4 w-4/5 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+            <h2 class="text-2xl font-bold mb-4 text-center">Prelude</h2>
+            <p class="font-semibold text-md mb-8 px-4">Your mental and physical health are both very important to your wellbeing, however we sometimes don't take our mental health as serious as we should. Below we have provided some resources to help guide you in getting help, which we strongly recommend viewing.</p>       
+            <p class="font-semibold text-md mb-8 px-4">We have broken these resources into sections for easier viewing.</p>       
+
+        </div>
+
+        <section class="flex flex-col mb-8 self-center w-4/5 gap-8 bg-neutral-secondary-medium shadow-sm">
+            <!-- Suicide Prevention Hotline -->
+            <div class="flex flex-col self-center p-4 bg-neutral-secondary-medium border-2 border-default-medium rounded-md shadow-xs">
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">988 Lifeline</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-center">Suicide & Crisis Lifeline</h2>
+                    <p class="font-semibold text-md px-4 mb-2 text-center text-red-400">If you have thoughts of self-harm, we highly recommend you to call 988 immediately. Your life matters.</p>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">988 Lifeline is a free mental health hotline available 24/7, 265 days a year. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“At the 988 Suicide & Crisis Lifeline, we understand that life's challenges can sometimes be difficult. Whether you're facing mental health struggles, emotional distress, alcohol or drug use concerns, or just need someone to talk to, our caring counselors are here for you. You are not alone.”</p>    
+                <a href="https://988lifeline.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            </div>
+            <div class="flex flex-col self-center p-4 bg-neutral-secondary-medium border-2 border-default-medium rounded-md shadow-xs">
+                <h2 class="text-2xl font-bold self-center mt-2">General nonprofits for everyone</h2>
+                <hr class="my-4 border-t-2 w-3/5 border-dashed self-center border-gray-400"/>
+                <!-- National Alliance on Mental Health -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">NAMI</h2>
+                    <h2 class="text-lg font-semibold mb-2 text-center">National Alliance on Mental Illness</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">NAMI is a grassroots, nonprofit organization dedicated to helping those affected by mental illness. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">"NAMI provides advocacy, education, support and public awareness so that all individuals and families affected by mental illness can build better lives."</p>    
+                <a href="https://www.nami.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            
+                <hr class="my-4 border-t-2 border-gray-500"/>
+                <!-- Mental Health America -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">MHA</h2>
+                    <h2 class="text-lg font-semibold mb-2 text-center">Mental Health America</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">MHA is a leading non-profit organization dedicated to research and advocacy for mental health. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“Mental Health America advances the mental health and well-being of all people living in the U.S. through public education, research, advocacy and policy, and direct service.”</p>    
+                <a href="https://mhanational.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            </div>
+
+            <div class="flex flex-col self-center p-4 bg-neutral-secondary-medium border-2 border-default-medium rounded-md shadow-xs">
+                <h2 class="text-2xl font-bold self-center mt-2">Nonprofits dedicated to youth and young adults</h2>
+                <hr class="my-4 border-t-2 w-3/5 border-dashed self-center border-gray-400"/>
+                <!-- ActiveMinds.org -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">Active Minds</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">Active Minds is a nonprofit organization dedicated to providing support for youth and young adults to help them succeed in life. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“Active Minds mobilizes youth and young adults to lead a transformative movement in mental health, forever changing how it is valued and prioritized in society. By equipping, connecting, and amplifying the collective and diverse voices of youth and young adults, we are building a movement of lasting champions who are improving mental health norms for all.”</p>    
+                <a href="https://activeminds.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            
+                <hr class="my-4 border-t-2 border-gray-500"/>
+                <!-- The JED Foundation -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">JED</h2>
+                    <h2 class="text-lg font-semibold mb-2 text-center">The Jed Foundation</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">JED is a nonprofit organization that provides resources for youth and young adults to learn about mental health and ways to manage it. Their mission statment:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“The Jed Foundation (JED) is a nonprofit that protects emotional health and prevents suicide for our nation's teens and young adults.”</p>    
+                <a href="https://jedfoundation.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            
+                <hr class="my-4 border-t-2 border-gray-500"/>
+                <!-- Gatorwell Health Promotion Services -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">Gatorwell</h2>
+                    <h2 class="text-lg font-semibold mb-2 text-center">Health Promotion Services</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">Gatorwell is UF's free health service dedicated to educating UF students on health and mental wellbeing, offering services like wellness coaching, HIV testing, alcohol/drug support services, and presentations/workshops. Gatorwell is partnered with the Jed Foundation. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“Empowering UF students to build their own path toward lifelong wellbeing through prevention, advocacy, and sustainable behavior change.”</p>    
+                <a href="https://gatorwell.ufsa.ufl.edu/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            </div>
+
+            <div class="flex flex-col self-center p-4 bg-neutral-secondary-medium border-2 border-default-medium rounded-md shadow-xs">
+                <h2 class="text-2xl font-bold self-center mt-2">Additional Resources</h2>
+                <hr class="my-4 border-t-2 w-3/5 border-dashed self-center border-gray-400"/>
+                <!-- HelpGuide.org -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">Help Guide</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">Help Guide is a nonprofit organization dedicated to researching and providing support for mental health issues. It aims to inform people of mental health and teach skills and strategies to manage and improve it. Help Guide is partnered with Harvard Health Publishing. Their mission statement:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">“We empower you with the knowledge and skills you need to strengthen your mental health & well-being.”</p>    
+                <a href="https://www.helpguide.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+
+                <hr class="my-4 border-t-2 border-gray-500"/>
+                <!-- Sleep Foundation by Sleep Doctor -->
+                <div class="self-center m-4 p-4 w-fit bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                    <h2 class="text-xl font-bold mb-2 text-center">Sleep Foundation</h2>
+                    <h2 class="text-lg font-semibold mb-2 text-center">By Sleep Doctor</h2>
+                </div>
+                <p class="font-normal text-md mb-2 px-4">Sleep Foundation is a subsidiary of Sleep Doctor, and conducts research on sleep patterns and health to provide resources for those who wish to improve their sleep. The Sleep Doctor brand also sells many sleep accessories and supplements designed to aid in sleep. From their "About Us" page:</p>
+                <p class="font-normal text-md mb-4 px-16 italic text-center">"As part of the Sleep Doctor brand, SleepFoundation.org is driven by one mission: to help you sleep better, every night. Our team of researchers, writers, and sleep specialists delivers science-backed insights, expert-tested product reviews, and the latest news in sleep health, so you can make informed decisions and wake up ready for your day."</p>    
+                <a href="https://www.sleepfoundation.org/" class="btn btn-md flex w-fit self-center bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">View Website</a>
+            </div>
+        </section>
+
+    </main>
 </body>
 </html>
 
