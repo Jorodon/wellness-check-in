@@ -23,11 +23,12 @@
                     },
                 });
 
+                const events = await eventHistoryResponse.json();
+                
                 if (eventHistoryResponse.status === 404) {
                     console.error("No events have been added yet.");
                 }
 
-                const events = await eventHistoryResponse.json();
                 successCallback(events)
             } catch (error){
                 console.error("No events have been added yet.");

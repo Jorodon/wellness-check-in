@@ -21,11 +21,14 @@
                     },
                 });
 
+                const trendHistoryData = await trendHistoryResponse.json();
+
                 if (trendHistoryResponse.status === 404) {
-                    console.error(trendHistoryResponse.message);
+                    document.getElementById('error-message').textContent = "Error: " + trendHistoryData.message;
+                    document.getElementById('error-message2').classList.remove('hidden');
                 }
 
-                const trendHistoryData = await trendHistoryResponse.json();
+
                 return trendHistoryData;
             } catch (error){
                 console.error("Something went wrong.");
@@ -43,12 +46,13 @@
                         'Authorization': `Bearer ${token}`
                     },
                 });
-
+               
+                const trendAverageData = await trendAverageResponse.json();
                 if (trendAverageResponse.status === 404) {
-                    console.error(trendAverageResponse.message);
+                    //console.error(trendAverageResponse.message);
                 }
 
-                const trendAverageData = await trendAverageResponse.json();
+
                 return trendAverageData;
             } catch (error){
                 console.error("Something went wrong.");
@@ -136,7 +140,7 @@
                 },
                 {
                 name: "Energy",
-                data: trendHistoryData.map(e => Object.values(e)[3]),
+                data: trendHistoryData.map(e => Object.values(e)[4]),
                 color: brandTertiaryColor,
                 },
             ],
@@ -191,15 +195,19 @@
             const today = new Date();
             let latestData = trendHistoryData.at(-1);
             if (latestData.date === today.toISOString().split('T')[0]) {
-                document.getElementById('stress-today').textContent = latestData.stress;
-                document.getElementById('mood-today').textContent = latestData.mood;
-                document.getElementById('energy-today').textContent = latestData.energy;
-                document.getElementById('sleep-today').textContent = latestData.sleep;
+                document.getElementById('stress-today').textContent = latestData.stress + '/5';
+                document.getElementById('mood-today').textContent = latestData.mood + '/5';
+                document.getElementById('energy-today').textContent = latestData.energy + '/5';
+                document.getElementById('sleep-today').textContent = latestData.sleep_hours + ' hours';
             }
             else {
                 document.getElementById('stress-today').textContent = 'NA';
                 document.getElementById('mood-today').textContent = 'NA';
                 document.getElementById('energy-today').textContent = 'NA';
+                document.getElementById('sleep-today').textContent = 'NA';
+            }
+
+            if (!latestData.sleep_hours) {
                 document.getElementById('sleep-today').textContent = 'NA';
             }
 
@@ -209,9 +217,10 @@
             document.getElementById('stress-average').textContent = round(trendAverageData.avg_stress);
             document.getElementById('mood-average').textContent = round(trendAverageData.avg_mood);
             document.getElementById('energy-average').textContent = round(trendAverageData.avg_energy);
-            document.getElementById('sleep-average').textContent = round(trendAverageData.avg_sleep)
-
-
+            document.getElementById('sleep-average').textContent = round(trendAverageData.avg_sleep_hours);
+            if (!trendAverageData.avg_sleep_hours) {
+                document.getElementById('sleep-average').textContent = 'NA';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', drawGraph);
@@ -302,31 +311,31 @@
                     <table class="grow table-auto border border-default-medium border-gray-400 rounded-md">
                         <thead>
                             <tr>
-                                <th class="border border-grey-300">Category</th>
-                                <th class="border border-grey-300">Average</th>
-                                <th class="border border-grey-300">Today</th>
+                                <th class="border border-grey-300 text-center">Category</th>
+                                <th class="border border-grey-300 text-center">Average</th>
+                                <th class="border border-grey-300 text-center">Today</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="border border-grey-300">Stress</td>
-                                <td id="stress-average" class="border border-grey-300"></td>
-                                <td id="stress-today" class="border border-grey-300"></td>
+                                <td class="border border-grey-300 text-center">Stress</td>
+                                <td id="stress-average" class="border border-grey-300 text-center"></td>
+                                <td id="stress-today" class="border border-grey-300 text-center"></td>
                             </tr>
                             <tr>
-                                <td class="border border-grey-300">Mood</td>
-                                <td id="mood-average" class="border border-grey-300"></td>
-                                <td id="mood-today" class="border border-grey-300"></td>
+                                <td class="border border-grey-300 text-center">Mood</td>
+                                <td id="mood-average" class="border border-grey-300 text-center"></td>
+                                <td id="mood-today" class="border border-grey-300 text-center"></td>
                             </tr>
                             <tr>
-                                <td class="border border-grey-300">Energy</td>
-                                <td id="energy-average" class="border border-grey-300"></td>
-                                <td id="energy-today" class="border border-grey-300"></td>
+                                <td class="border border-grey-300 text-center">Energy</td>
+                                <td id="energy-average" class="border border-grey-300 text-center"></td>
+                                <td id="energy-today" class="border border-grey-300 text-center"></td>
                             </tr>
                             <tr>
-                                <td class="border border-grey-300">Sleep</td>
-                                <td id="sleep-average" class="border border-grey-300"></td>
-                                <td id="sleep-today" class="border border-grey-300"></td>
+                                <td class="border border-grey-300 text-center">Sleep</td>
+                                <td id="sleep-average" class="border border-grey-300 text-center"></td>
+                                <td id="sleep-today" class="border border-grey-300 text-center"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -343,7 +352,10 @@
         <!-- Check-In graph for past 7 days-->
         <section class="grow min-h-0 justify-items-center">
             <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
-                <div id="line-chart" class="size-full"></div>
+                <div id="line-chart" class="size-full">
+                    <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+                    <p id="error-message2" class="hidden text-xl font-semibold text-center my-8">Please check-in at least once in the past 7 days to see statistics.</p>
+                </div>
             </div>   
         </section>
     </main>
