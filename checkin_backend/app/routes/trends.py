@@ -18,15 +18,17 @@ def get_weekly_avg():
 
     avg_data = db.session.query(func.avg(CheckIn.mood).label("avg_mood"),
                                 func.avg(CheckIn.stress).label("avg_stress"),
-                                func.avg(CheckIn.energy).label("avg_energy")).filter(CheckIn.user_id == user_id,
-                                                                                     CheckIn.date >= start_date,
-                                                                                     CheckIn.date <= today).first()
+                                func.avg(CheckIn.energy).label("avg_energy"),
+                                func.avg(CheckIn.sleep_hours)).filter(CheckIn.user_id == user_id,
+                                                                      CheckIn.date >= start_date,
+                                                                      CheckIn.date <= today).first()
     if not avg_data or avg_data.avg_mood is None:
         return jsonify({"message": "No check-in found for the past 7 days"}), 404
 
     return jsonify({"avg_mood": float(avg_data.avg_mood),
                     "avg_stress": float(avg_data.avg_stress),
-                    "avg_energy": float(avg_data.avg_energy)
+                    "avg_energy": float(avg_data.avg_energy),
+                    "avg_sleep_hours": float(avg_data.avg_sleep_hours)
                     })
 
 
@@ -49,6 +51,7 @@ def get_weekly_trends():
         weekly_history.append({"date": str(c.date),
                                "mood": c.mood,
                                "stress": c.stress,
-                               "energy": c.energy})
+                               "energy": c.energy,
+                               "sleep hours": c.sleep_hours})
 
     return jsonify(weekly_history)
