@@ -7,7 +7,6 @@
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <style>
-        /* Thin black line for sliders */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -17,7 +16,6 @@
             outline: none;
         }
 
-        /* Black circle for the slider handle */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -26,6 +24,17 @@
             background: #000;
             border-radius: 50%;
             cursor: pointer;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
         }
     </style>
 
@@ -40,7 +49,8 @@
                 const loginFormData = {
                     mood: Number(document.getElementById('mood').value),
                     stress: Number(document.getElementById('stress').value),
-                    energy: Number(document.getElementById('energy').value)
+                    energy: Number(document.getElementById('energy').value),
+                    sleep_hours: Number(document.getElementById('sleep').value)
                 }
 
                 const loginResponse = await fetch("{{ url_for('checkins.create_checkin') }}", {
@@ -150,34 +160,41 @@
                     <div class="flex flex-col">
                         <div class="flex justify-between text-sm font-bold mb-1">
                             <span>Mood Levels</span>
-                            <span id="moodVal">0</span>
+                            <span id="moodVal">1</span>
                         </div>
                         <input type="range" id="mood" min="1" max="5" value="1" oninput="updateVal('mood')">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Poor</span><span>Great</span>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Stress Levels</span>
-                            <span id="stressVal">0</span>
-                        </div>
-                        <input type="range" id="stress" min="1" max="5" value="1" oninput="updateVal('stress')">
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-sm font-bold mb-1">
+                        <span>Stress Levels</span>
+                        <span id="stressVal">1</span>
                     </div>
+                    <input type="range" id="stress" min="1" max="5" value="1" oninput="updateVal('stress')">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Poor</span><span>Great</span>
+                    </div>
+                </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Sleep Hours</span>
-                            <span id="sleepVal">0</span>
-                        </div>
-                        <input type="range" id="sleep" min="1" max="12" value="1" oninput="updateVal('sleep')">
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-sm font-bold mb-1">
+                        <span>Energy Levels</span>
+                        <span id="energyVal">1</span>
                     </div>
+                    <input type="range" id="energy" min="1" max="5" value="1" oninput="updateVal('energy')">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Poor</span><span>Great</span>
+                    </div>
+                </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Energy Levels</span>
-                            <span id="energyVal">0</span>
-                        </div>
-                        <input type="range" id="energy" min="1" max="5" value="1" oninput="updateVal('energy')">
-                    </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-bold whitespace-nowrap" for="sleep">Sleep Hours</label>
+                    <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="NULL"
+                        class="w-16 border border-black bg-white px-2 py-1 rounded text-sm outline-none focus:ring-2 focus:ring-black/20">
+                </div>
 
                     <div class="flex justify-center pt-6">
                         <button type="submit" class="bg-[#4285f4] text-white border border-black px-24 py-2 rounded-md font-medium shadow-sm hover:bg-blue-600 transition-colors">
@@ -185,6 +202,11 @@
                         </button>
                     </div>
                 </form>
+            </div>
+            <!-- Instructions -->
+            <div class="border mt-4 border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
+                <p class="font-normal text-md text-center mb-4 px-4">Please select a valid value for each field. Sleep hours can be any number between 0 and 24, but is optional and defaults to NULL if no value is entered.</p>
+                <p class="text-red-300 text-md font-semibold text-center">Note that once you have submitted your daily check-in, you cannot change your answers.</p>
             </div>
             <!-- Error message display -->
             <div>

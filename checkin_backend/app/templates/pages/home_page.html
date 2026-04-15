@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gator Check-In</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
     <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
@@ -269,11 +269,13 @@
                     },
                 });
 
+                const trendHistoryData = await trendHistoryResponse.json();
+
                 if (trendHistoryResponse.status === 404) {
-                    console.error(trendHistoryResponse.message);
+                    document.getElementById('error-message').textContent = "Error: " + trendHistoryData.message;
+                    document.getElementById('error-message2').classList.remove('hidden');
                 }
 
-                const trendHistoryData = await trendHistoryResponse.json();
                 return trendHistoryData;
             } catch (error){
                 console.error("Something went wrong.");
@@ -361,7 +363,7 @@
                 },
                 {
                 name: "Energy",
-                data: trendHistoryData.map(e => Object.values(e)[3]),
+                data: trendHistoryData.map(e => Object.values(e)[4]),
                 color: brandTertiaryColor,
                 },
             ],
@@ -590,7 +592,10 @@
             <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
                 <div class="size-full bg-neutral-primary-soft border border-default rounded-md shadow-xs p-4 md:p-6">
-                    <div id="line-chart" class="w-full h-120"></div>
+                    <div id="line-chart" class="w-full h-120">
+                        <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+                        <p id="error-message2" class="hidden text-xl font-semibold text-center my-8">Please check-in at least once in the past 7 days to see statistics.</p>
+                    </div>
                 </div>   
             </div>
         </section>
