@@ -5,12 +5,14 @@ from checkin_backend.app import create_app
 from checkin_backend.app.extensions import db
 from checkin_backend.app.models import User
 
+# ------- This file contains fixtures for the wellness check-in application's tests. ------- #
+
 @pytest.fixture
 def app():
     app = create_app({
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "JWT_SECRET_KEY": "test-secret-key",
+        "JWT_SECRET_KEY": "test-secret-key-tha-is-long-enough-for-jwt",
         "WTF_CSRF_ENABLED": False,
     })
 
@@ -33,12 +35,20 @@ def client(app):
 def test_user(app):
     with app.app_context():
         user = User(
+            username="testuser",
             email="test@example.com",
             password_hash=generate_password_hash("password123")
         )
         db.session.add(user)
         db.session.commit()
-        return user
+
+        user_id = user.id
+
+        return {
+            "id": user_id,
+            "email": user.email,
+            "username": user.username
+        }
 
 
 @pytest.fixture
