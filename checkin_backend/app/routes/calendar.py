@@ -5,7 +5,7 @@ import uuid
 from ..extensions import db
 from ..models import Event
 
-calendar_bp = Blueprint("calendar", __name__, url_prefix="/calendar")
+calendar_bp = Blueprint("calendar", __name__)
 
 
 # Helper functions
