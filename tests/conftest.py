@@ -51,5 +51,7 @@ def auth_headers(client, test_user):
         }
     )
 
+    assert response.status_code == 200
+
     token = response.get_json()["access-token"]
     return {"Authorization": f"Bearer {token}"}
