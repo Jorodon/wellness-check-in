@@ -5,7 +5,7 @@ from checkin_backend.app import create_app
 from checkin_backend.app.extensions import db
 from checkin_backend.app.models import User
 
-# ------- This file contains fixtures for the wellness check-in application's tests. ------- #
+# ------- This file contains fixtures for the gator check-in tests. ------- #
 
 @pytest.fixture
 def app():
