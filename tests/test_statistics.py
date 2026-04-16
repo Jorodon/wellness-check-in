@@ -92,7 +92,7 @@ def test_statistics_03(client, auth_headers, app, test_user):
 # Tests get weekly history with no check-ins in the past 7 days
 def test_statistics_04(client, auth_headers):
     response = client.get(
-        "/trends/weekly-history", 
+        "/trends/weekly-history",
         headers=auth_headers
     )
 

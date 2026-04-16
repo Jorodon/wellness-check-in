@@ -147,7 +147,7 @@ def test_checkin_08(client, auth_headers):
             "mood": 3,
             "stress": 4,
             "energy": 2,
-            "sleep_hours": 6
+            "sleep_hours": 7.5
         },
         headers=auth_headers
     )
@@ -162,7 +162,7 @@ def test_checkin_08(client, auth_headers):
     assert data["mood"] == 3
     assert data["stress"] == 4
     assert data["energy"] == 2
-    assert data["sleep_hours"] == 6.0
+    assert data["sleep_hours"] == 7.5
 
 # Test for getting check-in history
 def test_checkin_09(client, auth_headers, app, test_user):
