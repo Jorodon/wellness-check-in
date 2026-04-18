@@ -67,7 +67,7 @@ def test_calendar_04(client, auth_headers):
     )
 
     assert response.status_code == 400
-    assert response.get_json()["error"] == "end_time must be after start_time"
+    assert response.get_json()["error"] == "End date must be same day, or later date than start date"
 
 # Tests getting calendar events when there are no events and ensure list is empty
 def test_calendar_05(client, auth_headers):
