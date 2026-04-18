@@ -1,6 +1,4 @@
 # Gator Check-In
-## Overview
-Gator Check-In is a simple wellness tracking web application. The app gives users a easy way to log daily wellness data, write journal entries, manage weekly tasks and events, and review recent trends through a local web interface.
 
 ## Table Of Contents
 0. [Overview](#overview)
@@ -10,6 +8,9 @@ Gator Check-In is a simple wellness tracking web application. The app gives user
 4. [Usage/Examples](#usageexamples)
 5. [Documentation](#documentation)
 6. [Authors](#authors)
+
+## Overview
+Gator Check-In is a simple wellness tracking web application. The app gives users a easy way to log daily wellness data, write journal entries, manage weekly tasks and events, and review recent trends through a local web interface.
 
 ### Core Features
 - **User Authentication:** register and log in with a stored account
