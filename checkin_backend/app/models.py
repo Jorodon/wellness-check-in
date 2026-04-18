@@ -1,13 +1,13 @@
 from .extensions import db
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(length=30), nullable=False, unique=True)
+    username = db.Column(db.String(length=30), nullable=True, unique=False)
     email = db.Column(db.String(length=50), nullable=False, unique=True)
     password_hash = db.Column(db.String(length=60), nullable=False)
 
 
+# note to self: float here for sleep
 class CheckIn(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
