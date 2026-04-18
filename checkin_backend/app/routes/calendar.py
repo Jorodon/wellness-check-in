@@ -94,8 +94,8 @@ def create_event():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    if end_time < start_time:
-        return jsonify({"error": "end_time must be after start_time"}), 400
+    if end_time <= start_time:
+        return jsonify({"error": "End date must be same day, or later date than start date"}), 400
 
     if item_type not in ["event", "task"]:
         return jsonify({"error": "item type must be 'event' or 'task'"}), 400
@@ -215,6 +215,8 @@ def update_event(event_id):
                 event.start_time = parse_datetime(data["start_time"], "start_time")
             if "end_time" in data:
                 event.end_time = parse_datetime(data["end_time"], "end_time")
+                if event.end_time <= event.start_time:
+                    return jsonify({"error": "End date must be same day, or later date than start date"}), 400
 
         db.session.commit()
 
