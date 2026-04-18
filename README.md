@@ -10,9 +10,11 @@
 6. [Authors](#authors)
 
 ## Overview
+---
 Gator Check-In is a simple wellness tracking web application. The app gives users a easy way to log daily wellness data, write journal entries, manage weekly tasks and events, and review recent trends through a local web interface.
 
-### Core Features
+## Core Features
+---
 - **User Authentication:** register and log in with a stored account
 - **Daily Check-Ins:** record mood, stress, energy, and sleep data
 - **Journal Entries:** write a journal entry tied to the current day's check-in
@@ -85,6 +87,7 @@ Gator Check-In is a simple wellness tracking web application. The app gives user
 - [Video Overview](linkplaceholder)
 
 ## Authors
+---
 - [@Colbygrimmscott](https://github.com/Colbygrimmscott)
 - [@Jorodon](https://github.com/Jorodon)
 - [@Kroselli](https://github.com/Kroselli)
