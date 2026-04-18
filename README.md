@@ -2,7 +2,7 @@
 
 ## Table Of Contents
 0. [Overview](#overview)
-  - [0.1 Core Features](#core-features)
+1. [Core Features](#core-features)
 2. [Tech Stack](#tech-stack)
 3. [Getting Started](#getting-started)
 4. [Usage/Examples](#usageexamples)
