@@ -28,7 +28,7 @@ Gator Check-In is a simple wellness tracking web application. The app gives user
 - **Backend:** Python, Flask
 - **Database:** SQLite, SQLAlchemy, Flask-Migrate
 - **Authentication:** JWT, Werkzeug password hashing
-- **Frontend:** HTML, JavaScript, Tailwind CSS, DaisyUI
+- **Frontend:** HTML, JavaScript, Tailwind CSS, DaisyUI, Flowbite, FlyonUI
 - **Data Visualization / UI Libraries:** ApexCharts, FullCalendar, Flatpickr
 - **Testing:** Pytest
 - **Package Management:** pip, npm
