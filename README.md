@@ -83,8 +83,8 @@ Gator Check-In is a simple wellness tracking web application. The app gives user
 - **Templates:** `checkin_backend/app/templates`
 - **Tests:** `tests`
 
-- [Documentation](linkplaceholder)
-- [Video Overview](linkplaceholder)
+- [Documentation](https://docs.google.com/document/d/1jaVblzHqszyX0zXkMnWB6tTp2DiJgd34Qbe1RVLRbww/edit?usp=sharing)
+- [Video Overview](https://youtu.be/AlG-E0hBqF4)
 
 ## Authors
 ---
