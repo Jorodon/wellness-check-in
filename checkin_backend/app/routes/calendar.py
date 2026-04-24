@@ -5,23 +5,25 @@ import uuid
 from ..extensions import db
 from ..models import Event
 
-calendar_bp = Blueprint("calendar", __name__, url_prefix="/calendar")
+calendar_bp = Blueprint("calendar", __name__)
 
 
 # Helper functions
 def event_to_dict(event):
     return {
         "id": event.id,
-        "user_id": event.user_id,
         "title": event.title,
         "description": event.description,
-        "start_time": event.start_time.isoformat() if event.start_time else None,
-        "end_time": event.end_time.isoformat() if event.end_time else None,
-        "item_type": event.item_type,
-        "class_name": event.class_name,
-        "group_id": event.group_id,
-        "is_recurring": event.is_recurring,
-        "recurrence": event.recurrence
+        "start": event.start_time.isoformat() if event.start_time else None,
+        "end": event.end_time.isoformat() if event.end_time else None,
+        "classNames": event.class_names,
+        "groupId": event.group_id,
+        "extendedProps": {
+            "item_type": event.item_type,
+            "user_id": event.user_id,
+            #"is_recurring": event.is_recurring,
+            #"recurrence": event.recurrence
+        }
     }
 
 
@@ -54,13 +56,13 @@ def get_next_datetime(dt, recurrence):
     elif recurrence == "weekly":
         return dt + timedelta(weeks=1)
     elif recurrence == "monthly":
-        return dt +timedelta(days=30)
+        return dt + timedelta(days=30)
     else:
         return dt
 
 
 # POST - Create event(s)
-@calendar_bp.route("/events", methods=["POST"])
+@calendar_bp.route("/create_events", methods=["POST"])
 @jwt_required()
 def create_event():
     user_id = int(get_jwt_identity())
@@ -88,19 +90,19 @@ def create_event():
     try:
         start_time = parse_datetime(start_time_str, "start_time")
         end_time = parse_datetime(end_time_str, "end_time")
-        clas_names = validate_class_names(class_names)
+        class_names = validate_class_names(class_names)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
     if end_time <= start_time:
-        return jsonify({"error": "end_time must be after start_time"}), 400
+        return jsonify({"error": "End date must be same day, or later date than start date"}), 400
 
     if item_type not in ["event", "task"]:
         return jsonify({"error": "item type must be 'event' or 'task'"}), 400
 
     if is_recurring:
         if recurrence not in ["daily", "weekly", "monthly"]:
-            return jsonify ({"error": "recurrence must be 'daily', 'weekly', 'monthly'"}), 400
+            return jsonify({"error": "recurrence must be 'daily', 'weekly', 'monthly'"}), 400
     if not isinstance(repeat_count, int) or repeat_count < 1:
         return jsonify({"error": "repeat count must be positive"}), 400
 
@@ -117,21 +119,21 @@ def create_event():
 
         for _ in range(repeat_count):
             event = Event(user_id=user_id,
-                      title=title,
-                      description=description,
-                      start_time=current_start,
-                      end_time=current_end,
-                      item_type=item_type,
-                      class_names=class_names,
-                      group_id=group_id,
-                      is_recurring=True,
-                      recurrence=recurrence
-                      )
+                          title=title,
+                          description=description,
+                          start_time=current_start,
+                          end_time=current_end,
+                          item_type=item_type,
+                          class_names=class_names,
+                          group_id=group_id,
+                          is_recurring=True,
+                          recurrence=recurrence
+                          )
 
             db.session.add(event)
             created_events.append(event)
 
-            current_start = get_next_datetime((current_start, recurrence))
+            current_start = get_next_datetime(current_start, recurrence)
             if current_end:
                 current_end = get_next_datetime(current_end, recurrence)
 
@@ -149,7 +151,7 @@ def create_event():
                       )
 
         db.session.add(event)
-        created_events(event)
+        created_events.append(event)
 
     db.session.commit()
 
@@ -162,7 +164,7 @@ def create_event():
 @calendar_bp.route("/events", methods=["GET"])
 @jwt_required()
 def get_events():
-    user_id = str(get_jwt_identity())
+    user_id = int(get_jwt_identity())
 
     events = Event.query.filter_by(user_id=user_id).order_by(Event.start_time).all()
 
@@ -187,7 +189,7 @@ def update_event(event_id):
         return jsonify({"error": "Not a recurring event"}), 400
 
     if update_scope == "group":
-        events = Event.query.filter_by(user_id= user_id, group_id=event.group_id).all()
+        events = Event.query.filter_by(user_id=user_id, group_id=event.group_id).all()
     else:
         events = [event]
 
@@ -213,6 +215,8 @@ def update_event(event_id):
                 event.start_time = parse_datetime(data["start_time"], "start_time")
             if "end_time" in data:
                 event.end_time = parse_datetime(data["end_time"], "end_time")
+                if event.end_time <= event.start_time:
+                    return jsonify({"error": "End date must be same day, or later date than start date"}), 400
 
         db.session.commit()
 
@@ -225,11 +229,11 @@ def update_event(event_id):
 # DELETE - event(s)
 @calendar_bp.route("/event/<int:event_id>", methods=["DELETE"])
 @jwt_required()
-def delete_evetn(event_id):
+def delete_event(event_id):
     user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
-    delete_scope = data.get("delter_scope", "one")
+    delete_scope = data.get("delete_scope", "one")
 
     event = Event.query.filter_by(id=event_id, user_id=user_id).first()
 
@@ -246,4 +250,3 @@ def delete_evetn(event_id):
     db.session.commit()
 
     return jsonify({"message": "Event deleted"}), 200
-

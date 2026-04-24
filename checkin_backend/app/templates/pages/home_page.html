@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gator Check-In</title>
     <link href="../../static/css/output.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+    <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     <script>
-        window.onload = async function fetchCheckinStatus() {
+        // Fetches today's check-in data from backend and updates check-in box
+        async function fetchCheckinStatus() {
             try {
                 const token = localStorage.getItem('jwtToken');
                 const checkinResponse = await fetch('/checkins/today', {
@@ -19,15 +22,18 @@
                     },
                 });
 
+                // If no check-in has been done today, tells user to go check-in first
                 if (checkinResponse.status === 404) {
                     document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
                     return;
                 }
 
+                //Otherwise, adds a table with check-in results
                 const checkinJsonData = await checkinResponse.json();
-                document.getElementById('mood-data').innerText = checkinJsonData.mood;
-                document.getElementById('stress-data').innerText = checkinJsonData.stress;
-                document.getElementById('energy-data').innerText = checkinJsonData.energy;
+                document.getElementById('mood-data').innerText = checkinJsonData.mood + "/5";
+                document.getElementById('stress-data').innerText = checkinJsonData.stress + "/5";
+                document.getElementById('energy-data').innerText = checkinJsonData.energy + "/5";
+                document.getElementById('sleep-data').innerText = checkinJsonData.sleep_hours + " hours";
                 document.getElementById('checkin-status-message').classList.add('hidden');
                 document.getElementById('checkin-results').classList.remove('hidden');
                 document.getElementById('checkin-button').classList.add('hidden');
@@ -35,74 +41,110 @@
                 document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
             }
         }
+
+        //Fetches today's journal entry from backend and updates journal box
+        async function fetchJournalStatus() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const journalResponse = await fetch('/journal/today', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                // If no journal entry has been made today, tells user to go make one
+                if (journalResponse.status === 404) {
+                    document.getElementById('journal-status-message').innerText = "You haven't written a journal entry yet today. Please write an entry using the button below."
+                    return;
+                }
+
+                //Otherwise, adds journal entry to journal box
+                const journalJsonData = await journalResponse.json();
+                document.getElementById('journal-data').textContent = journalJsonData.journal;
+                document.getElementById('journal-status-message').classList.add('hidden');
+                document.getElementById('journal-results').classList.remove('hidden');
+                document.getElementById('journal-button').classList.add('hidden');
+            } catch (error){
+                document.getElementById('journal-status-message').innerText = "Error retrieving journal data."
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', fetchCheckinStatus);
+        document.addEventListener('DOMContentLoaded', fetchJournalStatus);
     </script>
 
     <script defer>
+        //Calendar scripts
 
-        // async function fetchEventHistory() {
-        //     try {
-        //         const token = localStorage.getItem('jwtToken');
-        //         const eventHistoryResponse = await fetch('/calendar/history', {
-        //             method: 'GET',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'Authorization': 'Bearer ${token}'
-        //             },
-        //         });
+        //Function to fetch events/reminders from backend
+        async function fetchEvents(info, successCallback, failureCallback) {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const eventHistoryResponse = await fetch('/calendar/events', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
 
-        //         if (eventHistoryResponse.status === 404) {
-        //             document.getElementById('calendar-status-message').innerText = "You haven't logged any events. Click the button below to add some events."
-        //             return;
-        //         }
+                if (eventHistoryResponse.status === 404) {
+                    console.error("No events have been added yet.");
+                }
 
-        //         const events = await response.json();
-        //     } catch (error){
-        //         document.getElementById('calendar-status-message').innerText = "Error retrieving calendar data."
-        //     }
-        // }
+                const events = await eventHistoryResponse.json();
+                successCallback(events)
+            } catch (error){
+                console.error("No events have been added yet.");
+            }
+        }
 
+        let checkinHistory = null;
+        // Fetches all check-in history (including journal)
+        async function fetchCheckinHistoryStatus() {
+            // Only runs once and caches it
+            if (!checkinHistory) {
+                try {
+                const token = localStorage.getItem('jwtToken');
+                const checkinResponse = await fetch('/checkins/history', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                checkinHistory = await checkinResponse.json();
+
+                } catch (error){
+                    document.getElementById('checkin-status-message').innerText = "Error retrieving check-in data."
+                }
+            }
+            return checkinHistory;
+        }
+        
+        //Helper function to add days to a date
         function addDays(date, days) {
             const result = new Date(date)
             result.setDate(result.getDate() + days)
             return result
         }
-        function formatDate(date) {
-            return date.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-            })
-        }
 
         const today = new Date()
-        
-        const events = [
-            {
-            title: 'Past Event',
-            start: addDays(today, -2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'All Day Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            classNames: ['fc-event-info']
-            },
-            {
-            title: 'Long Event',
-            start: addDays(today, 2).toISOString().split('T')[0],
-            end: addDays(today, 5).toISOString().split('T')[0],
-            classNames: ['fc-event-primary']
-            }
-        ]
 
         let selectedEvent = null
         let selectedDateInfo = null
 
-        document.addEventListener('DOMContentLoaded', function () {
+        //Main calendar function
+        document.addEventListener('DOMContentLoaded', async function () {
             const calendar = document.getElementById('calendar')
             const calendarList = document.getElementById('calendar-list')
+            const eventForm = document.getElementById('submission-form')
+            const deleteEvent = document.getElementById('delete-event')
 
+            //Defines the main calendar (one on left)
             const calendarObj = new FullCalendar.Calendar(calendar, {
                 initialView: 'dayGridMonth',
                 editable: true,
@@ -111,33 +153,305 @@
                 selectable: true,
                 headerToolbar: {
                 left: 'title prev,next',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                right: 'dayGridMonth'
                 },
-                events: events
+                events: fetchEvents,
+                //Controls display of check-in/journal boxes based on calendar date selected
+                select: async function(info) {
+                    const checkinDate = info.start.toISOString().split('T')[0];
+                    const allCheckinHistory = await fetchCheckinHistoryStatus();
+                    const checkinDateData = allCheckinHistory.find((el) => el.date === checkinDate);
+
+                    document.getElementById('checkin-button').classList.add('hidden');
+                    document.getElementById('journal-button').classList.add('hidden');
+                    //If selected day has a daily check-in, displays the table
+                    if (checkinDateData ? checkinDateData.mood : false) {
+                        document.getElementById('mood-data').innerText = checkinDateData.mood + "/5";
+                        document.getElementById('stress-data').innerText = checkinDateData.stress + "/5";
+                        document.getElementById('energy-data').innerText = checkinDateData.energy + "/5";
+                        document.getElementById('sleep-data').innerText = checkinDateData.sleep_hours + " hours";
+                        if (checkinDate === today.toISOString().split('T')[0]) {
+                            document.getElementById('checkin-table-date').textContent = "Today's Check-In";
+                        } else {
+                            document.getElementById('checkin-table-date').textContent = checkinDateData.date + " Check-In";
+                        }
+                        document.getElementById('checkin-status-message').classList.add('hidden');
+                        document.getElementById('checkin-results').classList.remove('hidden');
+                    //Otherwise, displays error message
+                    } else {
+                        //If selected day is today, displays default message
+                        if (checkinDate === today.toISOString().split('T')[0]) {
+                            document.getElementById('checkin-status-message').innerText = "You haven't checked in yet today. Please check-in using the button below."
+                            document.getElementById('checkin-button').classList.remove('hidden');
+                        } else {
+                            document.getElementById('checkin-status-message').innerText = "No check-in data found for " + checkinDate + ".";
+                        }
+                        
+                        document.getElementById('checkin-status-message').classList.remove('hidden');
+                        document.getElementById('checkin-results').classList.add('hidden');
+                    }
+
+                    //If selected day has a journal entry, displays it
+                    if (checkinDateData ? checkinDateData.journal : false) {
+                        document.getElementById('journal-data').textContent = checkinDateData.journal
+                        document.getElementById('journal-status-message').classList.add('hidden');
+                        document.getElementById('journal-results').classList.remove('hidden');
+                    //Otherwise, displays error message
+                    } else {
+                        //If selected day is today, displays default message
+                        if (checkinDate === today.toISOString().split('T')[0]) {
+                            document.getElementById('journal-status-message').innerText = "You haven't written a journal entry yet today. Please write an entry using the button below."
+                            document.getElementById('journal-button').classList.remove('hidden');
+                        } else {
+                            document.getElementById('journal-status-message').innerText = "No journal entry found for " + checkinDate + ".";
+                        }
+                        
+                        document.getElementById('journal-status-message').classList.remove('hidden');
+                        document.getElementById('journal-results').classList.add('hidden');
+                    }
+                },
+                //Controls reminder detail modal when clicking on event
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'View Reminder'
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
+
+                    document.getElementById('reminder-creation-modal').showModal()
+                }
             })
 
+            //Defines second calendar (list to the right)
             const calendarListObj = new FullCalendar.Calendar(calendarList, {
+                displayEventTime: false,
                 initialView: 'listWeek',
                 editable: true,
                 direction: 'ltr',
                 eventResizableFromStart: true,
                 selectable: true,
-                contentHeight: 'auto',
                 headerToolbar: {
                 left: 'title',
                 right: 'prev,next'
                 },
-                events: events
+                events: fetchEvents,
+                //Controls reminder detail modal when clicking on event
+                eventClick: function (info) {
+                    selectedEvent = info.event
+                    document.getElementById('reminder-header').textContent = 'View Reminder'
+                    document.querySelector('#reminder-creation-modal #reminder-name').value = info.event.title
+                    document.querySelector('#reminder-creation-modal #flatpickr-start-date').value = info.event.startStr.split('T')[0]
+                    document.querySelector('#reminder-creation-modal #flatpickr-end-date').value = addDays(info.event.endStr, -1).toISOString().split('T')[0]
+                    document.querySelector('#reminder-creation-modal #reminder-description').value = info.event.extendedProps.description
+                    
+                    document.getElementById('reminder-creation-modal').showModal()
+                }
             })
             
             calendarObj.render()
             calendarListObj.render()
         });
     </script>
+
+    <script>
+        //Statistics graph script
+
+        //Helper function to retrieve check-in history
+        async function fetchTrendHistory() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendHistoryResponse = await fetch('/trends/weekly-history', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                const trendHistoryData = await trendHistoryResponse.json();
+
+                if (trendHistoryResponse.status === 404) {
+                    document.getElementById('error-message').textContent = "Error: " + trendHistoryData.message;
+                    document.getElementById('error-message2').classList.remove('hidden');
+                }
+
+                return trendHistoryData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        //Function to define graph 
+        const drawGraph = async() => {
+
+            const getBrandColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-1').trim();
+            };
+
+            const getBrandSecondaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-2').trim();
+            };
+
+            const getBrandTertiaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-3').trim();
+            };
+
+            const brandColor = getBrandColor();
+            const brandSecondaryColor = getBrandSecondaryColor();
+            const brandTertiaryColor = getBrandTertiaryColor();
+
+            const trendHistoryData = await fetchTrendHistory();
+            const options = {
+            chart: {
+                height: "100%",
+                maxWidth: "100%",
+                type: "line",
+                fontFamily: "Inter, sans-serif",
+                foreColor: '#ffffff',
+                dropShadow: {
+                enabled: false,
+                },
+                toolbar: {
+                show: true,
+                },
+            },
+            title: {
+                text: 'Daily Check-In Scores over Past 7 Days',
+                align: 'center',
+                margin: 5,
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                },
+            },
+            tooltip: {
+                enabled: true,
+                x: {
+                show: false,
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            stroke: {
+                width: 6,
+                curve: 'smooth'
+            },
+            grid: {
+                show: true,
+                strokeDashArray: 4,
+                padding: {
+                left: 10,
+                right: 10,
+                top: 0
+                },
+            },
+            series: [
+                {
+                name: "Mood",
+                data: trendHistoryData.map(e => Object.values(e)[1]),
+                color: brandColor,
+                },
+                {
+                name: "Stress",
+                data: trendHistoryData.map(e => Object.values(e)[2]),
+                color: brandSecondaryColor,
+                },
+                {
+                name: "Energy",
+                data: trendHistoryData.map(e => Object.values(e)[4]),
+                color: brandTertiaryColor,
+                },
+            ],
+            legend: {
+                show: true
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            xaxis: {
+                categories: trendHistoryData.map(e => Object.values(e)[0]),
+                labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body'
+                }
+                },
+                axisBorder: {
+                show: false,
+                },
+                axisTicks: {
+                show: false,
+                },
+            },
+            yaxis: {
+                show: true,
+                labels: {
+                    //offsetX: -10,
+                    style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body',
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                },
+                tickAmount: 4,
+                min: 1,
+                max: 5,
+            },
+            }
+
+            const chart = new ApexCharts(document.getElementById("line-chart"), options);
+            chart.render();
+        }
+
+        document.addEventListener('DOMContentLoaded', drawGraph);
+    </script>
+
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If no user is logged in, return to landing page
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                window.location.href = "/";
+                return;
+            }
+
+            //Otherwise, display user email in navbar
+            const authJsonData = await authResponse.json();
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
+
+        });
+        
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
+        async function signoutClick() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
+            window.location.href = "/";
+        }
+
+    </script>
     
 </head>
 <body>
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -154,98 +468,138 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
-                    <button class="btn btn-ghost btn-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
-                    </button>
-                    <button class="btn btn-ghost btn-circle">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
+                    <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
                         </div>
                     </button>
+                    <div id="account-dropdown" class="hidden">
+                        <ul class="menu menu-vertical px-1">
+                            <li>
+                                <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
     <main class="mx-auto max-w-screen-2xl p-6">
-        <h1 class="text-3xl font-bold text-center my-8">Coming Soon...Gator Check-In!</h1>
+        <h1 class="text-3xl font-bold text-center my-8">Dashboard</h1>
 
         <section class="flex flex-row gap-8 justify-items-center mb-4">
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <!-- Daily Check-In Box -->
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
-                <p id="checkin-status-message">Updating daily check-in status...</p>
-                <div id="checkin-results" class="hidden mt-4 space-y-4">
-                    <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
+                <p id="checkin-status-message" class="text-xl font-semibold text-center my-8">Updating daily check-in status...</p>
+                <div id="checkin-results" class="hidden mt-4 h-4/5 space-y-4">
+                    <table class="size-full table-auto text-medium text-sm border border-separate rounded-sm">
+                        <thead>
+                            <tr>
+                                <th class="border rounded-sm p-1 text-center">Category</th>
+                                <th id="checkin-table-date" class="border rounded-sm p-1 text-center">Today's Check-In</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">Stress</td>
+                                <td id="stress-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Mood</td>
+                                <td id="mood-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Energy</td>
+                                <td id="energy-data" class="text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Sleep</td>
+                                <td id="sleep-data" class="text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <a href="{{ url_for('main.checkin_page') }}" id="checkin-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to daily check-in</a>
+                <a href="{{ url_for('main.checkin_page') }}" id="checkin-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to today's check-in</a>
             </div>
 
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <!-- Journal Entry Box -->
+            <div class="w-full min-h-62.5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Journal</h2>
+                <p id="journal-status-message" class="text-xl font-semibold text-center my-8">Retrieving journal entry status...</p>
+                <div id="journal-results" class="hidden mt-4 h-4/5 p-2 space-y-4 border border-default-medium text-sm rounded-sm">
+                    <p id="journal-data"></p>
+                </div>
+                <a href="{{ url_for('main.journal_page') }}" id="journal-button" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Go to today's journal</a>
             </div>
         </section>
 
-        <section class="flex flex-col gap-8 justify-items-center">
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+        <section class="flex flex-col gap-4 justify-items-center">
+
+            <!-- Instruction box -->
+            <div class="self-center w-full my-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Instructions</h2>
+                <p class="font-normal text-md mb-8 px-4">Click on a date box on the calendar to view check-in results and journal entry from that day, if they exist. Click on an existing reminder (either on the calendar or list of upcoming events) to view more details for that reminder. For more options, visit the Weekly Tasks page.</p>
+            </div>
+
+            <!-- Calendar Box -->
+            <div class="w-full min-h-62.5 mb-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Calendar</h2>
-                <div class="card flex flex-row p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
-                    <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs overflow-visible"></div>
-                    <div class="flex-1 grow-1 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+                <div class="card flex flex-row gap-4 m-2">
+                    <div id='calendar' class="flex-1 grow-4 p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs overflow-visible"></div>
+                    <div class="flex-1 flex flex-col grow p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                         <h2 class="font-semibold mb-4">Upcoming Events</h2>
-                        <div id="calendar-list" class="h-auto px-1"></div>
+                        <div id="calendar-list" class="flex-1 max-h-full object-contain px-1 overflow-auto"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Statistics</h2>
-            </div>
-
-            </div>
-        </section>
-
-
-{#
-        <section class="grid grid-cols-2 grid-rows-5 gap-8 justify-items-center">
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Daily Check-In</h2>
-                <p id="checkin-status-message">Updating daily check-in status...</p>
-                <div id="checkin-results" class="hidden mt-4 space-y-4">
-                    <p>Mood: <span id="mood-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Stress: <span id="stress-data" class="font-semi-bold"></span>/5</p> 
-                    <p>Energy: <span id="energy-data" class="font-semi-bold"></span>/5</p> 
-                </div>
-            </div>
-
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Journal</h2>
-            </div>
-
-            <div class="col-span-2 row-span-2 w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                <h2 class="text-xl font-bold mb-4">Calendar</h2>
-                <div class="card flex flex-row not-prose max-h-4/5 p-4 gap-4 m-4 bg-neutral-primary-medium border border-default-medium rounded-base shadow-xs">
-                    <div id='calendar' class="flex-1"></div>
-                    <div class="min-w-1/5 p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
-                        <div class="flex flex-col">
-                            <h2 class="font-semibold mb-4">Upcoming Events</h2>
-                            <div id="calendar-list" class="flex-1 px-1"></div>
+            <!-- Calendar Modal for reviewing reminder details -->
+            <dialog id="reminder-creation-modal" class="modal" role="dialog" tabindex="-1">
+                <div class="modal-box max-w-3xl">
+                    <form id="close-form" method="dialog">
+                        <button id="close-button" type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
+                    <h3 id="reminder-header" class="test-lg font-bold">Create a Reminder</h3>
+                    <div>
+                        <div class="flex flex-row gap-4 my-4">
+                            <div class="flex-1">
+                                <label for "reminder-name" class="block mb-3 text-sm font-medium text-heading">Task Name</label>
+                                <input type="text" id="reminder-name" class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Ex. Take the dog for a walk" required>
+                            </div>
+                        </div>
+                        <div class="flex flex-row gap-8 mt-4">
+                            <div class="">
+                                <label for "flatpickr-start-date" class="block mb-3 text-sm font-medium text-heading">Start Date</label>
+                                <input type="text" id="flatpickr-start-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            </div>
+                            <div class="justify-left">
+                                <label for "flatpickr-end-date" class="block mb-3 text-sm font-medium text-heading">End Date</label>
+                                <input type="text" id="flatpickr-end-date" class="input max-w-md bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="YYYY-MM-DD" required>
+                            </div>      
+                        </div>
+                        <div class="mt-4">
+                            <label for "reminder-description" class="block mb-3 text-sm font-medium text-heading">Task Description</label>
+                            <textarea id="reminder-description" rows="15" class="w-full p-3 bg-neutral-secondary-medium border border-default-medium rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" placeholder="Write a short description..." required></textarea>
                         </div>
                     </div>
                 </div>
-            </div>
+            </dialog>
 
-            <div class="w-full min-h-[250px] p-4 bg-neutral-secondary-medium border border-default-medium rounded-base shadow-xs">
+            <!-- Statistics Box -->
+            <div class="w-full grow h-max p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                 <h2 class="text-xl font-bold mb-4">Statistics</h2>
-            </div>
-
+                <div class="size-full bg-neutral-primary-soft border border-default rounded-md shadow-xs p-4 md:p-6">
+                    <div id="line-chart" class="w-full h-120">
+                        <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+                        <p id="error-message2" class="hidden text-xl font-semibold text-center my-8">Please check-in at least once in the past 7 days to see statistics.</p>
+                    </div>
+                </div>   
             </div>
         </section>
-#}
     </main>
-    
 </body>
 </html>
 

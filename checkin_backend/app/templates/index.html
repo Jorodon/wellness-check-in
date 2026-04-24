@@ -3,14 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gator Check-In</title>
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If user is not logged in, do nothing
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                return;
+            }
+
+            //Otherwise, reroute to dashboard
+            window.location.href = "/home";
+        });
+    </script>
 </head>
 <body>
     <main>
         <div class="grid grid-cols-3 grid-rows-3 h-screen w-screen justify-center">
             <div class="col-start-2 row-start-2 item-center">
-                <div class="flex flex-col border bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <div class="flex flex-col bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
                     <h1 class="text-xl text-center font-bold mt-4">Welcome to Gator Check-In!</h1>
                     <div class="flex flex-col p-4 gap-4 items-center">
                         <a href="{{ url_for('main.login_page') }}" class="btn btn-md flex bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs">Login</a>

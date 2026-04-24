@@ -3,11 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gator Check-In</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/calendar/apexcharts.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+    <script>
+        //Helper function to retrieve check-in history over past 7 days
+        async function fetchTrendHistory() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendHistoryResponse = await fetch('/trends/weekly-history', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+
+                const trendHistoryData = await trendHistoryResponse.json();
+
+                if (trendHistoryResponse.status === 404) {
+                    document.getElementById('error-message').textContent = "Error: " + trendHistoryData.message;
+                    document.getElementById('error-message2').classList.remove('hidden');
+                }
+
+
+                return trendHistoryData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        //Helper function to retrieve check-in average over past 7 days
+        async function fetchTrendAverage() {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                const trendAverageResponse = await fetch('/trends/weekly-average', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                });
+               
+                const trendAverageData = await trendAverageResponse.json();
+                if (trendAverageResponse.status === 404) {
+                    //console.error(trendAverageResponse.message);
+                }
+
+
+                return trendAverageData;
+            } catch (error){
+                console.error("Something went wrong.");
+            }
+        }
+
+        //Function to define graph
+        const drawGraph = async() => {
+
+            const getBrandColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-1').trim();
+            };
+
+            const getBrandSecondaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-2').trim();
+            };
+
+            const getBrandTertiaryColor = () => {
+            const computedStyle = getComputedStyle(document.documentElement);
+            return computedStyle.getPropertyValue('--color-graph-3').trim();
+            };
+
+            const brandColor = getBrandColor();
+            const brandSecondaryColor = getBrandSecondaryColor();
+            const brandTertiaryColor = getBrandTertiaryColor();
+
+            const trendHistoryData = await fetchTrendHistory();
+            const options = {
+            chart: {
+                height: "100%",
+                maxWidth: "100%",
+                type: "line",
+                fontFamily: "Inter, sans-serif",
+                foreColor: '#ffffff',
+                dropShadow: {
+                enabled: false,
+                },
+                toolbar: {
+                show: true,
+                },
+            },
+            title: {
+                text: 'Daily Check-In Scores over Past 7 Days',
+                align: 'center',
+                margin: 5,
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                },
+            },
+            tooltip: {
+                enabled: true,
+                x: {
+                show: false,
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            stroke: {
+                width: 6,
+                curve: 'smooth'
+            },
+            grid: {
+                show: true,
+                strokeDashArray: 4,
+                padding: {
+                left: 10,
+                right: 10,
+                top: 0
+                },
+            },
+            series: [
+                {
+                name: "Mood",
+                data: trendHistoryData.map(e => Object.values(e)[1]),
+                color: brandColor,
+                },
+                {
+                name: "Stress",
+                data: trendHistoryData.map(e => Object.values(e)[2]),
+                color: brandSecondaryColor,
+                },
+                {
+                name: "Energy",
+                data: trendHistoryData.map(e => Object.values(e)[4]),
+                color: brandTertiaryColor,
+                },
+            ],
+            legend: {
+                show: true
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            xaxis: {
+                categories: trendHistoryData.map(e => Object.values(e)[0]),
+                labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body'
+                }
+                },
+                axisBorder: {
+                show: false,
+                },
+                axisTicks: {
+                show: false,
+                },
+            },
+            yaxis: {
+                show: true,
+                labels: {
+                    //offsetX: -10,
+                    style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-body',
+                    },
+                    formatter: function(val) {
+                        return val.toFixed(0);
+                    }
+                },
+                tickAmount: 4,
+                min: 1,
+                max: 5,
+            },
+            }
+
+            const chart = new ApexCharts(document.getElementById("line-chart"), options);
+            chart.render();
+        }
+
+        //Function to update the table
+        const drawTable = async() => {
+            const trendHistoryData = await fetchTrendHistory();
+            const trendAverageData = await fetchTrendAverage();
+            const today = new Date();
+            let latestData = trendHistoryData.at(-1);
+            if (latestData.date === today.toISOString().split('T')[0]) {
+                document.getElementById('stress-today').textContent = latestData.stress + '/5';
+                document.getElementById('mood-today').textContent = latestData.mood + '/5';
+                document.getElementById('energy-today').textContent = latestData.energy + '/5';
+                document.getElementById('sleep-today').textContent = latestData.sleep_hours + ' hours';
+            }
+            else {
+                document.getElementById('stress-today').textContent = 'NA';
+                document.getElementById('mood-today').textContent = 'NA';
+                document.getElementById('energy-today').textContent = 'NA';
+                document.getElementById('sleep-today').textContent = 'NA';
+            }
+
+            if (!latestData.sleep_hours) {
+                document.getElementById('sleep-today').textContent = 'NA';
+            }
+
+            function round(data) {
+                return Number.parseFloat(data).toFixed(2);
+            }
+            document.getElementById('stress-average').textContent = round(trendAverageData.avg_stress);
+            document.getElementById('mood-average').textContent = round(trendAverageData.avg_mood);
+            document.getElementById('energy-average').textContent = round(trendAverageData.avg_energy);
+            document.getElementById('sleep-average').textContent = round(trendAverageData.avg_sleep_hours);
+            if (!trendAverageData.avg_sleep_hours) {
+                document.getElementById('sleep-average').textContent = 'NA';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', drawGraph);
+        document.addEventListener('DOMContentLoaded', drawTable);
+    </script>
+
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If no user is logged in, return to landing page
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                window.location.href = "/";
+                return;
+            }
+
+            //Otherwise, display user email in navbar
+            const authJsonData = await authResponse.json();
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
+
+        });
+        
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
+        async function signoutClick() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
+            window.location.href = "/";
+        }
+
+    </script>
 </head>
-<body>
+
+<body class="flex flex-col h-lvh">
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -24,22 +281,84 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
-                    <button class="btn btn-ghost btn-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
-                    </button>
-                    <button class="btn btn-ghost btn-circle">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
+                    <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
                         </div>
                     </button>
+                    <div id="account-dropdown" class="hidden">
+                        <ul class="menu menu-vertical px-1">
+                            <li>
+                                <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
-    <h1>Coming Soon...Gator Check-In!</h1>
-    <p>Statistics page</p>
+    <main class="flex flex-col grow mx-auto p-6 w-full h-0">
+        <h1 class="text-3xl font-bold text-center my-8">Statistics</h1>
+
+        <section class="flex flex-row gap-8 justify-items-center mb-4 h-1/4">
+
+            <!-- Daily Check-In Average Table -->
+            <div class="w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Averages</h2>
+                <div class="flex">
+                    <table class="grow table-auto border border-default-medium border-gray-400 rounded-md">
+                        <thead>
+                            <tr>
+                                <th class="border border-grey-300 text-center">Category</th>
+                                <th class="border border-grey-300 text-center">Average</th>
+                                <th class="border border-grey-300 text-center">Today</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-grey-300 text-center">Stress</td>
+                                <td id="stress-average" class="border border-grey-300 text-center"></td>
+                                <td id="stress-today" class="border border-grey-300 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300 text-center">Mood</td>
+                                <td id="mood-average" class="border border-grey-300 text-center"></td>
+                                <td id="mood-today" class="border border-grey-300 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300 text-center">Energy</td>
+                                <td id="energy-average" class="border border-grey-300 text-center"></td>
+                                <td id="energy-today" class="border border-grey-300 text-center"></td>
+                            </tr>
+                            <tr>
+                                <td class="border border-grey-300 text-center">Sleep</td>
+                                <td id="sleep-average" class="border border-grey-300 text-center"></td>
+                                <td id="sleep-today" class="border border-grey-300 text-center"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex flex-col w-full p-4 bg-neutral-secondary-medium border border-default-medium rounded-md shadow-xs">
+                <h2 class="text-xl font-bold mb-4">Notice Any Trends?</h2>
+                <p id="user-email-display" class="font-normal text-md mb-8 px-4">If you've noticed that your scores have been trending downwards recently, or if you just feel a little off, we recommend you visit the Resources page for links to sources that could help. Click the button below.</p>
+                <a href="{{ url_for('main.resources_page') }}" class="btn btn-md flex w-fit px-4 bg-neutral-secondary-medium border border-default-medium text-sm font-medium rounded-md focus:ring-brand focus:border-brand text-heading shadow-xs self-center">Go to Resource page</a>
+            </div>
+        </section>
+
+        <!-- Check-In graph for past 7 days-->
+        <section class="grow min-h-0 justify-items-center">
+            <div class="size-full bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 md:p-6">
+                <div id="line-chart" class="size-full">
+                    <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+                    <p id="error-message2" class="hidden text-xl font-semibold text-center my-8">Please check-in at least once in the past 7 days to see statistics.</p>
+                </div>
+            </div>   
+        </section>
+    </main>
 </body>
 </html>
 

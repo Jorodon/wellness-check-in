@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gator Check-In</title>
     <link href="../../static/css/output.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <style>
-        /* Thin black line for sliders */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -16,7 +16,6 @@
             outline: none;
         }
 
-        /* Black circle for the slider handle */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -26,9 +25,21 @@
             border-radius: 50%;
             cursor: pointer;
         }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
     </style>
 
     <script>
+        //Sends check-in data to backend when submit button is clicked
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -38,7 +49,8 @@
                 const loginFormData = {
                     mood: Number(document.getElementById('mood').value),
                     stress: Number(document.getElementById('stress').value),
-                    energy: Number(document.getElementById('energy').value)
+                    energy: Number(document.getElementById('energy').value),
+                    sleep_hours: Number(document.getElementById('sleep').value)
                 }
 
                 const loginResponse = await fetch("{{ url_for('checkins.create_checkin') }}", {
@@ -51,9 +63,12 @@
                 });
 
                 const loginReturn = await loginResponse.json();
-
-                if (loginResponse.ok) {
+                // If check-in successful, return to dashboard
+                if (loginResponse.ok || loginResponse.status === 409) {
                     window.location.href = "/home";
+                // If there is an error, display error message
+                } else if (loginResponse.status === 400) {
+                    document.getElementById('error-message').textContent = "Error: " + loginReturn.error;
                 } else {
                     alert(loginReturn.error || "An unknown error has occurred");
                 }
@@ -61,10 +76,47 @@
         });
     </script>
 
+    <script>
+        //Checks if user is logged in when loading page
+        document.addEventListener('DOMContentLoaded', async function () {
+            const token = localStorage.getItem('jwtToken');
+            //CHANGE LINE BELOW TO NEW LINK
+            const authResponse = await fetch('/checkins/today', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            // If no user is logged in, return to landing page
+            if (authResponse.status === 401 || authResponse.status === 422) {
+                window.location.href = "/";
+            // If check-in has already been done today, return to dashboard
+            } else if (authResponse.ok) {
+                window.location.href = "/home";
+            }
+
+            //Otherwise, display user email in navbar
+            const authJsonData = await authResponse.json();
+            document.getElementById('user-email-display').innerText = "Hello, " + localStorage.getItem('email');
+
+        });
+        
+        //Removes access token and email from storage and returns to landing page when signout button is clicked
+        async function signoutClick() {
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('email');
+            window.location.href = "/";
+        }
+
+    </script>
+
 </head>
 <body>
 
     <header>
+        <!-- Navbar -->
         <nav>
             <div class="navbar bg-base-100 shadow-sm">
                 <div class="navbar-start">
@@ -81,58 +133,68 @@
                     <a class="btn btn-ghost text-xl">Gator Check-In</a>
                 </div>
                 <div class="navbar-end">
-                    <button class="btn btn-ghost btn-circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> </svg>
-                    </button>
-                    <button class="btn btn-ghost btn-circle">
+                    <p id="user-email-display" class="font-medium text-sm text-blue-300 px-4"></p>
+                    <button type="button" id="account-dropdown-button" data-dropdown-toggle="account-dropdown" class="btn btn-ghost btn-circle">
                         <div class="indicator">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /> </svg>
-                            <span class="badge badge-xs badge-primary indicator-item"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 32 32" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15.503A5.041 5.041 0 1 0 16 5.42a5.041 5.041 0 0 0 0 10.083zm0 2.215c-6.703 0-11 3.699-11 5.5v3.363h22v-3.363c0-2.178-4.068-5.5-11-5.5z"/></svg>
                         </div>
                     </button>
+                    <div id="account-dropdown" class="hidden">
+                        <ul class="menu menu-vertical px-1">
+                            <li>
+                                <button type="button" id="signout-button" onclick="signoutClick()" class="btn btn-md block min-w-40 bg-neutral-secondary-medium border border-default-medium text-md font-semibold rounded-md focus:ring-brand focus:border-brand text-heading mx-auto shadow-xs">Signout</button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
 
+    <!-- Check-In Form -->
     <main class="bg-[#f5f5f5] min-h-screen flex items-center justify-center font-sans text-black">
         <div class="border border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
             <h1 class="text-3xl text-center mb-10 font-medium">Daily Check-In</h1>
-
             <div class="bg-[#eeeeee] border border-gray-300 p-12 mx-auto w-[90%]">
                 <form class="space-y-12">
-                    
                     <div class="flex flex-col">
                         <div class="flex justify-between text-sm font-bold mb-1">
                             <span>Mood Levels</span>
-                            <span id="moodVal">0</span>
+                            <span id="moodVal">1</span>
                         </div>
                         <input type="range" id="mood" min="1" max="5" value="1" oninput="updateVal('mood')">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Poor</span><span>Great</span>
+                        </div>
                     </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Stress Levels</span>
-                            <span id="stressVal">0</span>
-                        </div>
-                        <input type="range" id="stress" min="1" max="5" value="1" oninput="updateVal('stress')">
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-sm font-bold mb-1">
+                        <span>Stress Levels</span>
+                        <span id="stressVal">1</span>
                     </div>
+                    <input type="range" id="stress" min="1" max="5" value="1" oninput="updateVal('stress')">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Poor</span><span>Great</span>
+                    </div>
+                </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Sleep Hours</span>
-                            <span id="sleepVal">0</span>
-                        </div>
-                        <input type="range" id="sleep" min="1" max="12" value="1" oninput="updateVal('sleep')">
+                <div class="flex flex-col">
+                    <div class="flex justify-between text-sm font-bold mb-1">
+                        <span>Energy Levels</span>
+                        <span id="energyVal">1</span>
                     </div>
+                    <input type="range" id="energy" min="1" max="5" value="1" oninput="updateVal('energy')">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Poor</span><span>Great</span>
+                    </div>
+                </div>
 
-                    <div class="flex flex-col">
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span>Energy Levels</span>
-                            <span id="energyVal">0</span>
-                        </div>
-                        <input type="range" id="energy" min="1" max="5" value="1" oninput="updateVal('energy')">
-                    </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-bold whitespace-nowrap" for="sleep">Sleep Hours</label>
+                    <input type="number" id="sleep" min="0" max="24" step="0.5" placeholder="NULL"
+                        class="w-16 border border-black bg-white px-2 py-1 rounded text-sm outline-none focus:ring-2 focus:ring-black/20">
+                </div>
 
                     <div class="flex justify-center pt-6">
                         <button type="submit" class="bg-[#4285f4] text-white border border-black px-24 py-2 rounded-md font-medium shadow-sm hover:bg-blue-600 transition-colors">
@@ -141,10 +203,19 @@
                     </div>
                 </form>
             </div>
+            <!-- Instructions -->
+            <div class="border mt-4 border-black p-8 w-[95%] max-w-5xl bg-white shadow-sm">
+                <p class="font-normal text-md text-center mb-4 px-4">Please select a valid value for each field. Sleep hours can be any number between 0 and 24, but is optional and defaults to NULL if no value is entered.</p>
+                <p class="text-red-300 text-md font-semibold text-center">Note that once you have submitted your daily check-in, you cannot change your answers.</p>
+            </div>
+            <!-- Error message display -->
+            <div>
+                <p id="error-message" class="text-red-500 text-xl font-semibold text-center my-8"></p>
+            </div>
         </div>
     </main>
     
-
+    <!-- Updates a slider when it is moved -->
     <script>
         function updateVal(id) {
             const slider = document.getElementById(id);
